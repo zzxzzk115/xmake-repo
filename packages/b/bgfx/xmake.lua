@@ -83,11 +83,16 @@ package("bgfx")
                            ".build/projects/gmake-" .. target,
                            "config=" .. mode:lower()}
             elseif package:is_plat("linux") then
-                table.insert(args, "--gcc=linux-gcc")
-                target = "linux" .. (package:is_arch("x86_64") and "64" or "32") .. "_gcc"
+				-- add Raspberry Pi support
+				if package:is_arch("arm*") then
+					table.insert(args, "--gcc=rpi")
+				else
+					table.insert(args, "--gcc=linux-gcc")
+				end
+                target = "linux" .. (package:is_arch("*64") and "64" or "32") .. "_gcc"
                 configs = {"-C",
                            ".build/projects/gmake-linux",
-                           "config=" .. mode:lower() .. (package:is_arch("x86_64") and "64" or "32")}
+                           "config=" .. mode:lower() .. (package:is_arch("*64") and "64" or "32")}
             end
             table.insert(args, "gmake")
 
