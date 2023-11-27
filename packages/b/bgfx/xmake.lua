@@ -7,11 +7,14 @@ package("bgfx")
     add_urls("https://github.com/bkaradzic/bgfx.git")
     add_versions("7816", "5ecddbf4d51e2dda2a56ae8cafef4810e3a45d87")
     add_versions("8203", "484a5f0c25b53584a6b7fce0702a6bb580072d81")
+	add_versions("8624", "6dea6a22b64eea21829bdffdade1c482d4fc3eb5")
 
     add_resources("7816", "bx", "https://github.com/bkaradzic/bx.git", "51f25ba638b9cb35eb2ac078f842a4bed0746d56")
     add_resources("8203", "bx", "https://github.com/bkaradzic/bx.git", "b9501348c596b68e5e655a8308df5c55f61ecd80")
+	add_resources("8624", "bx", "https://github.com/bkaradzic/bx.git", "be3e348eb20c064daa7e23a37a1966de05418eaa")
     add_resources("7816", "bimg", "https://github.com/bkaradzic/bimg.git", "8355d36befc90c1db82fca8e54f38bfb7eeb3530")
     add_resources("8203", "bimg", "https://github.com/bkaradzic/bimg.git", "663f724186e26caf46494e389ed82409106205fb")
+	add_resources("8624", "bimg", "https://github.com/bkaradzic/bimg.git", "6c4d1888eb2003b0186ca7a5b3484ff054cf03cd")
 
     if is_plat("windows") then
         add_syslinks("user32", "gdi32", "psapi")
@@ -76,6 +79,7 @@ package("bgfx")
 
             local configs
             local target
+            local enable_sse = false
             if package:is_plat("macosx") then
                 target = (package:is_arch("x86_64") and "osx-x64" or "osx-arm64")
                 table.insert(args, "--gcc=" .. target)
@@ -83,16 +87,25 @@ package("bgfx")
                            ".build/projects/gmake-" .. target,
                            "config=" .. mode:lower()}
             elseif package:is_plat("linux") then
-				-- add Raspberry Pi support
-				if package:is_arch("arm*") then
-					table.insert(args, "--gcc=rpi")
-				else
-					table.insert(args, "--gcc=linux-gcc")
-				end
-                target = "linux" .. (package:is_arch("*64") and "64" or "32") .. "_gcc"
-                configs = {"-C",
-                           ".build/projects/gmake-linux",
-                           "config=" .. mode:lower() .. (package:is_arch("*64") and "64" or "32")}
+                -- add Raspberry Pi support
+                if package:is_arch("arm64.*") then -- 64 bit Raspberry Pi
+                    table.insert(args, "--gcc=linux-gcc")
+                    configs = {"-C",
+                        ".build/projects/gmake-linux",
+                        "config=" .. mode:lower()}
+                elseif package:is_arch("arm.*") then -- 32 bit Raspberry Pi
+                    table.insert(args, "--gcc=rpi")
+                    configs = {"-C",
+                        ".build/projects/gmake-rpi",
+                        "config=" .. mode:lower()}
+                else
+                    enable_sse = true
+                    table.insert(args, "--gcc=linux-gcc")
+                    configs = {"-C",
+                        ".build/projects/gmake-linux",
+                        "config=" .. mode:lower() .. (package:is_arch("x86_64") and "64" or "32")}
+                end
+                target = "linux" .. ((package:is_arch("x86_64") or package:is_arch("arm64.*")) and "64" or "32") .. "_gcc"
             end
             table.insert(args, "gmake")
 
@@ -100,6 +113,10 @@ package("bgfx")
             envs.BX_DIR = bxdir
             envs.BIMG_DIR = bimgdir
             os.vrunv(genie, args, {envs = envs})
+            -- disable SSE if needed
+            if not enable_sse then
+                os.run("find . -name '*.make' -exec sed -i 's/-mfpmath=sse//g; s/-msse2//g' {} +")
+            end
             make.build(package, configs)
 
             if package:is_plat("macosx") then
