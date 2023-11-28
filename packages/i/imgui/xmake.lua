@@ -69,7 +69,7 @@ package("imgui")
         add_syslinks("imm32")
     end
 
-    on_load("macosx", "linux", "windows", "mingw", "android", "iphoneos", function (package)
+    on_load("macosx", "linux", "windows", "mingw", "android", "iphoneos", "wasm", function (package)
         -- begin: backwards compatibility
         if package:config("sdl2") or package:config("sdlrenderer") then
             package:config_set("sdl2_renderer", true)
@@ -119,7 +119,7 @@ package("imgui")
         end
     end)
 
-    on_install("macosx", "linux", "windows", "mingw", "android", "iphoneos", function (package)
+    on_install("macosx", "linux", "windows", "mingw", "android", "iphoneos", "wasm", function (package)
         local configs = {
             dx9              = package:config("dx9"),
             dx10             = package:config("dx10"),
