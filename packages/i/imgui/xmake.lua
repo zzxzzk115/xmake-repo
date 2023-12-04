@@ -40,6 +40,7 @@ package("imgui")
     add_versions("v1.79", "f1908501f6dc6db8a4d572c29259847f6f882684b10488d3a8d2da31744cd0a4")
     add_versions("v1.75", "1023227fae4cf9c8032f56afcaea8902e9bfaad6d9094d6e48fb8f3903c7b866")
 
+    add_configs("android",          {description = "Enable the android backend", default = false, type = "boolean"})
     add_configs("dx9",              {description = "Enable the dx9 backend", default = false, type = "boolean"})
     add_configs("dx10",             {description = "Enable the dx10 backend", default = false, type = "boolean"})
     add_configs("dx11",             {description = "Enable the dx11 backend", default = false, type = "boolean"})
@@ -121,6 +122,7 @@ package("imgui")
 
     on_install("macosx", "linux", "windows", "mingw", "android", "iphoneos", "wasm", function (package)
         local configs = {
+            android          = package:config("android"),
             dx9              = package:config("dx9"),
             dx10             = package:config("dx10"),
             dx11             = package:config("dx11"),
