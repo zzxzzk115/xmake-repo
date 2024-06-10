@@ -53,7 +53,7 @@ package("onnxruntime")
         end
     end
 
-    on_load(function (package) 
+    on_load(function (package)
         if package:config("gpu") then
             package:add("deps", "cuda", {configs = {utils = {"cudart", "nvrtc"}}})
 
@@ -88,6 +88,9 @@ package("onnxruntime")
     end)
 
     on_install("windows", "linux|arm64", "linux|x86_64", "macosx", function (package)
+        if package:is_plat("windows") then
+            os.mv("lib/*.dll", package:installdir("bin"))
+        end
         os.cp("*", package:installdir())
     end)
 
