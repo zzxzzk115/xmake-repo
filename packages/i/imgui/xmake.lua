@@ -52,6 +52,7 @@ package("imgui")
     add_versions("v1.76", "e482dda81330d38c87bd81597cacaa89f05e20ed2c4c4a93a64322e97565f6dc")
     add_versions("v1.75", "1023227fae4cf9c8032f56afcaea8902e9bfaad6d9094d6e48fb8f3903c7b866")
 
+    add_configs("android",          {description = "Enable the android backend", default = false, type = "boolean"})
     add_configs("dx9",              {description = "Enable the dx9 backend", default = false, type = "boolean"})
     add_configs("dx10",             {description = "Enable the dx10 backend", default = false, type = "boolean"})
     add_configs("dx11",             {description = "Enable the dx11 backend", default = false, type = "boolean"})
@@ -81,7 +82,7 @@ package("imgui")
         add_syslinks("imm32")
     end
 
-    on_load("macosx", "linux", "windows", "mingw", "android", "iphoneos", function (package)
+    on_load("macosx", "linux", "windows", "mingw", "android", "iphoneos", "wasm", function (package)
         -- begin: backwards compatibility
         if package:config("sdl2") or package:config("sdlrenderer") then
             package:config_set("sdl2_renderer", true)
@@ -131,8 +132,9 @@ package("imgui")
         end
     end)
 
-    on_install("macosx", "linux", "windows", "mingw", "android", "iphoneos", function (package)
+    on_install("macosx", "linux", "windows", "mingw", "android", "iphoneos", "wasm", function (package)
         local configs = {
+            android          = package:config("android"),
             dx9              = package:config("dx9"),
             dx10             = package:config("dx10"),
             dx11             = package:config("dx11"),

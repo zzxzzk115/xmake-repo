@@ -18,6 +18,7 @@ option("wgpu",             {showmenu = true,  default = false})
 option("freetype",         {showmenu = true,  default = false})
 option("user_config",      {showmenu = true,  default = nil, type = "string"})
 option("wchar32",          {showmenu = true,  default = false})
+option("android",          {showmenu = true,  default = false})
 
 if has_config("glfw") then
     add_requires("glfw")
@@ -53,6 +54,12 @@ target("imgui")
 
     if is_kind("shared") and is_plat("windows", "mingw") then
         add_defines("IMGUI_API=__declspec(dllexport)")
+    end
+
+    if has_config("android") then
+        add_files("backends/imgui_impl_android.cpp")
+        add_headerfiles("(backends/imgui_impl_android.h)")
+        add_links("android", "log")
     end
 
     if has_config("dx9") then

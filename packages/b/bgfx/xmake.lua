@@ -79,6 +79,7 @@ package("bgfx")
 
             local configs
             local target
+            local enable_sse = false
             if package:is_plat("macosx") then
                 target = (package:is_arch("x86_64") and "osx-x64" or "osx-arm64")
                 table.insert(args, "--gcc=" .. target)
@@ -86,11 +87,25 @@ package("bgfx")
                            ".build/projects/gmake-" .. target,
                            "config=" .. mode:lower()}
             elseif package:is_plat("linux") then
-                table.insert(args, "--gcc=linux-gcc")
-                target = "linux" .. (package:is_arch("x86_64") and "64" or "32") .. "_gcc"
-                configs = {"-C",
-                           ".build/projects/gmake-linux",
-                           "config=" .. mode:lower() .. (package:is_arch("x86_64") and "64" or "32")}
+                -- add Raspberry Pi support
+                if package:is_arch("arm64.*") then -- 64 bit Raspberry Pi
+                    table.insert(args, "--gcc=linux-gcc")
+                    configs = {"-C",
+                        ".build/projects/gmake-linux",
+                        "config=" .. mode:lower()}
+                elseif package:is_arch("arm.*") then -- 32 bit Raspberry Pi
+                    table.insert(args, "--gcc=rpi")
+                    configs = {"-C",
+                        ".build/projects/gmake-rpi",
+                        "config=" .. mode:lower()}
+                else
+                    enable_sse = true
+                    table.insert(args, "--gcc=linux-gcc")
+                    configs = {"-C",
+                        ".build/projects/gmake-linux",
+                        "config=" .. mode:lower() .. (package:is_arch("x86_64") and "64" or "32")}
+                end
+                target = "linux" .. ((package:is_arch("x86_64") or package:is_arch("arm64.*")) and "64" or "32") .. "_gcc"
             end
             table.insert(args, "gmake")
 
@@ -98,6 +113,10 @@ package("bgfx")
             envs.BX_DIR = bxdir
             envs.BIMG_DIR = bimgdir
             os.vrunv(genie, args, {envs = envs})
+            -- disable SSE if needed
+            if not enable_sse then
+                os.run("find . -name '*.make' -exec sed -i 's/-mfpmath=sse//g; s/-msse2//g' {} +")
+            end
             make.build(package, configs)
 
             if package:is_plat("macosx") then
