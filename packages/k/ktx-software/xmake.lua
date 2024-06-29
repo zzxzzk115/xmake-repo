@@ -14,12 +14,25 @@ package("ktx-software")
         add_syslinks("m", "pthread")
     end
 
-    add_deps("cmake")
+    add_deps("cmake", "shaderc v2022.2")
 
     on_install(function (package)
-        local configs = {"-DKTX_FEATURE_TOOLS=ON"}
+        local configs = {
+            "-DKTX_FEATURE_KTX1=ON",
+            "-DKTX_FEATURE_KTX2=ON",
+            "-DKTX_FEATURE_VK_UPLOAD=ON",
+            "-DKTX_FEATURE_TOOLS=OFF",
+            "-DKTX_FEATURE_DOC=OFF",
+            "-DKTX_FEATURE_JNI=OFF",
+            "-DKTX_FEATURE_PY=OFF",
+            "-DKTX_FEATURE_TESTS=OFF",
+            "-DKTX_FEATURE_TOOLS_CTS=OFF",
+            "-DKTX_FEATURE_GL_UPLOAD=OFF",
+            -- "-DKTX_FEATURE_STATIC_LIBRARY=" .. (package:config("shared") and "OFF" or "ON")
+        }
+        
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
         table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
-        
+
         import("package.tools.cmake").install(package, configs)
     end)
