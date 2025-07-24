@@ -44,7 +44,8 @@ package("openxr-sdk")
         #include <cstring>
 
         int main() {
-            XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
+            XrInstanceCreateInfo createInfo = {};
+            createInfo.type = XR_TYPE_INSTANCE_CREATE_INFO;
             strcpy(createInfo.applicationInfo.applicationName, "OpenXRTest");
             createInfo.applicationInfo.applicationVersion = 1;
             strcpy(createInfo.applicationInfo.engineName, "NoEngine");
@@ -63,5 +64,5 @@ package("openxr-sdk")
                 return 1;
             }
         }
-        ]]}))
+        ]]}, {configs = {languages = "c++11"}}))
     end)
