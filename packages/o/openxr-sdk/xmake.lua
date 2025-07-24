@@ -14,6 +14,10 @@ package("openxr-sdk")
     add_deps("python 3.x", {kind = "binary"})
     add_deps("jsoncpp")
 
+    if is_plat("windows") then
+        add_syslinks("advapi32")
+    end
+
     if is_plat("android") then
         add_deps("egl-headers")
     end
