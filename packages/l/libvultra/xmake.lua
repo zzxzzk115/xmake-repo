@@ -4,7 +4,7 @@ package("libvultra")
     set_license("MIT")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
-    add_versions("2025.08.02", "0c286c20f937e2f5027c0af98e96448dbc9ab4dc")
+    add_versions("2025.08.021", "eab2a7de77d621fa05df2830293575b1b87721e9")
 
     add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
     add_configs("tracky", {description = "Enable Tracky profiler support", default = true, type = "boolean"})
@@ -66,30 +66,14 @@ package("libvultra")
                 print(format("Added Vulkan library: %s", path.join(vulkansdk.linkdirs[1], lib_name .. suffix)))
             end
         end
-        package:add("defines", "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC", {public = true})
-        
-        if package:config("tracy") then
-            package:add("defines", "TRACY_ENABLE=1", {public = true})
-        else
-            package:add("defines", "TRACY_ENABLE=0", {public = true})
-        end
+        package:add("defines", "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC")
+        package:add("defines", "TRACY_ENABLE=" .. (package:config("tracy") and "1" or "0"))
+        package:add("defines", "TRACKY_ENABLE=" .. (package:config("tracky") and "1" or "0"))
+        package:add("defines", "TRACKY_VULKAN")
+        package:add("defines", "FMT_UNICODE=0")
 
-        if package:config("tracky") then
-            package:add("defines", "TRACKY_ENABLE=1", {public = true})
-        else
-            package:add("defines", "TRACKY_ENABLE=0", {public = true})
-        end
-        package:add("defines", "TRACKY_VULKAN", {public = true})
-        
-        package:add("defines", "FMT_UNICODE=0", {public = true})
-
-        if package:config("debug") then
-            package:add("defines", "_DEBUG", {public = true})
-            if package:config("renderdoc") then
-                package:add("defines", "VULTRA_ENABLE_RENDERDOC", {public = true})
-            end
-        else
-            package:add("defines", "NDEBUG", {public = true})
+        if package:config("debug") and package:config("renderdoc") then
+            package:add("defines", "VULTRA_ENABLE_RENDERDOC")
         end
     end)
 
