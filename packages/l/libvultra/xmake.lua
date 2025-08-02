@@ -4,7 +4,7 @@ package("libvultra")
     set_license("MIT")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
-    add_versions("2025.08.01", "13e2a23b9f0583db47983ad455bc7b97e98028d1")
+    add_versions("2025.08.02", "0c286c20f937e2f5027c0af98e96448dbc9ab4dc")
 
     add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
     add_configs("tracky", {description = "Enable Tracky profiler support", default = true, type = "boolean"})
@@ -21,9 +21,10 @@ package("libvultra")
     add_deps("fg")
     add_deps("cpptrace")
     add_deps("tracy 0.11.1", {configs={on_demand=true}})
+    add_deps("libsdl3", {system=false})
     add_deps("imgui v1.92.0-docking", {configs={vulkan=true,sdl3=true,wchar32=true}})
     add_deps("assimp", {configs={debug=false,draco=true,shared=true}})
-    add_deps("spirv-cross vulkan-sdk-1.4.309", {configs={debug=false,shared=true}})
+    add_deps("spirv-cross vulkan-sdk-1.4.309", {configs={debug=false,shared=true}, system=false})
     add_deps("glslang 1.4.309+0", {configs={debug=false},system=false})
     add_deps("openxr", {configs={debug=false,shared=true}})
 
@@ -103,11 +104,12 @@ package("libvultra")
     on_test(function (package)
         assert(package:check_cxxsnippets({test = [[
             #include <vultra/core/base/common_context.hpp>
+            #include <vultra/core/os/window.hpp>
+            #include <vultra/core/rhi/command_buffer.hpp>
+            #include <vultra/core/rhi/frame_controller.hpp>
             #include <vultra/core/rhi/graphics_pipeline.hpp>
+            #include <vultra/core/rhi/render_device.hpp>
             #include <vultra/core/rhi/vertex_buffer.hpp>
-            #include <vultra/function/app/imgui_app.hpp>
-
-            #include <imgui.h>
 
             using namespace vultra;
 
@@ -117,7 +119,60 @@ package("libvultra")
                 glm::vec3 color;
             };
 
-            const auto* const vertCode = R"(
+            int main()
+            try
+            {
+                os::Window window = os::Window::Builder {}.setExtent({1024, 768}).build();
+
+                // Event callback
+                window.on<os::GeneralWindowEvent>([](const os::GeneralWindowEvent& event, os::Window& wd) {
+                    if (event.type == SDL_EVENT_KEY_DOWN)
+                    {
+                        // Press ESC to close the window
+                        if (event.internalEvent.key.key == SDLK_ESCAPE)
+                        {
+                            wd.close();
+                        }
+                    }
+                });
+
+                rhi::RenderDevice renderDevice(rhi::RenderDeviceFeatureFlagBits::eNormal);
+
+                VULTRA_CLIENT_INFO("RenderDevice Name: {}", renderDevice.getName());
+                VULTRA_CLIENT_INFO("RenderDevice PhysicalDeviceInfo: {}", renderDevice.getPhysicalDeviceInfo().toString());
+
+                VULTRA_CLIENT_WARN("Press ESC to close the window");
+
+                window.setTitle(std::format("RHI Triangle ({})", renderDevice.getName()));
+
+                // Create swapchain
+                rhi::Swapchain swapchain = renderDevice.createSwapchain(window);
+
+                // Create frame controller
+                rhi::FrameController frameController {renderDevice, swapchain, 3};
+
+                // Create vertex buffer
+                rhi::VertexBuffer vertexBuffer = renderDevice.createVertexBuffer(sizeof(SimpleVertex), 3);
+
+                // Upload vertex buffer
+                // Triangle in NDC for simplicity.
+                constexpr auto kTriangle = std::array {
+                    // clang-format off
+                    //                    position                 color
+                    SimpleVertex{ {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } }, // top
+                    SimpleVertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } }, // left
+                    SimpleVertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }  // right
+                    // clang-format on
+                };
+                {
+                    constexpr auto kVerticesSize       = sizeof(SimpleVertex) * kTriangle.size();
+                    auto           stagingVertexBuffer = renderDevice.createStagingBuffer(kVerticesSize, kTriangle.data());
+
+                    renderDevice.execute(
+                        [&](auto& cb) { cb.copyBuffer(stagingVertexBuffer, vertexBuffer, vk::BufferCopy {0, 0, kVerticesSize}); });
+                }
+
+                const auto* const vertCode = R"(
             #extension GL_ARB_separate_shader_objects : enable
 
             layout(location = 0) in vec3 a_Position;
@@ -131,7 +186,7 @@ package("libvultra")
             gl_Position = vec4(a_Position, 1.0);
             gl_Position.y *= -1.0;
             })";
-            const auto* const fragCode = R"(
+                const auto* const fragCode = R"(
             #extension GL_ARB_separate_shader_objects : enable
 
             layout(location = 0) in vec3 v_FragColor;
@@ -141,36 +196,9 @@ package("libvultra")
             FragColor = vec4(v_FragColor, 1.0);
             })";
 
-            // Triangle in NDC for simplicity.
-            constexpr auto kTriangle = std::array {
-                // clang-format off
-                //                    position                 color
-                SimpleVertex{ {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } }, // top
-                SimpleVertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } }, // left
-                SimpleVertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }  // right
-                // clang-format on
-            };
-
-            class ImGuiExampleApp final : public ImGuiApp
-            {
-            public:
-                explicit ImGuiExampleApp(const std::span<char*>& args) :
-                    ImGuiApp(args, {.title = "RHI Triangle with ImGui"}, {.enableDocking = false})
-                {
-                    m_VertexBuffer = m_RenderDevice->createVertexBuffer(sizeof(SimpleVertex), 3);
-
-                    // Upload vertex buffer
-                    {
-                        constexpr auto kVerticesSize       = sizeof(SimpleVertex) * kTriangle.size();
-                        auto           stagingVertexBuffer = m_RenderDevice->createStagingBuffer(kVerticesSize, kTriangle.data());
-
-                        m_RenderDevice->execute([&](auto& cb) {
-                            cb.copyBuffer(stagingVertexBuffer, m_VertexBuffer, vk::BufferCopy {0, 0, kVerticesSize});
-                        });
-                    }
-
-                    m_GraphicsPipeline = rhi::GraphicsPipeline::Builder {}
-                                            .setColorFormats({m_Swapchain.getPixelFormat()})
+                // Create graphics pipeline
+                auto graphicsPipeline = rhi::GraphicsPipeline::Builder {}
+                                            .setColorFormats({swapchain.getPixelFormat()})
                                             .setInputAssembly({
                                                 {0, {.type = rhi::VertexAttribute::Type::eFloat3, .offset = 0}},
                                                 {1,
@@ -187,55 +215,54 @@ package("libvultra")
                                             })
                                             .setRasterizer({.polygonMode = rhi::PolygonMode::eFill})
                                             .setBlending(0, {.enabled = false})
-                                            .build(*m_RenderDevice);
-                }
+                                            .build(renderDevice);
 
-                void onImGui() override
+                while (!window.shouldClose())
                 {
-                    ImGui::ShowDemoWindow();
-                    ImGui::Begin("Example Window");
-                    ImGui::Text("Hello, world!");
-            #ifdef VULTRA_ENABLE_RENDERDOC
-                    ImGui::Button("Capture One Frame");
-                    if (ImGui::IsItemClicked())
+                    window.pollEvents();
+
+                    if (!swapchain)
+                        continue;
+
+                    auto& backBuffer        = frameController.getCurrentTarget().texture;
+                    auto& cb                = frameController.beginFrame();
+                    bool  acquiredNextFrame = frameController.acquireNextFrame();
+                    if (!acquiredNextFrame)
                     {
-                        m_WantCaptureFrame = true;
+                        continue;
                     }
-            #endif
-                    ImGui::End();
-                }
 
-                void onRender(rhi::CommandBuffer& cb, const rhi::RenderTargetView rtv, const fsec dt) override
-                {
-                    const auto& [frameIndex, target] = rtv;
-                    rhi::prepareForAttachment(cb, target, false);
+                    rhi::prepareForAttachment(cb, backBuffer, false);
+                    const rhi::FramebufferInfo framebufferInfo {.area             = rhi::Rect2D {.extent = backBuffer.getExtent()},
+                                                                .colorAttachments = {
+                                                                    {
+                                                                        .target     = &backBuffer,
+                                                                        .clearValue = glm::vec4 {0.0f, 0.0f, 0.0f, 1.0f},
+                                                                    },
+                                                                }};
                     {
                         RHI_GPU_ZONE(cb, "RHI Triangle");
-                        cb.beginRendering({
-                                            .area = {.extent = target.getExtent()},
-                                            .colorAttachments =
-                                                {
-                                                    {
-                                                        .target     = &target,
-                                                        .clearValue = glm::vec4 {0.0f, 0.0f, 0.0f, 1.0f},
-                                                    },
-                                                },
-                                        })
-                            .bindPipeline(m_GraphicsPipeline)
+                        cb.beginRendering(framebufferInfo)
+                            .bindPipeline(graphicsPipeline)
                             .draw({
-                                .vertexBuffer = &m_VertexBuffer,
+                                .vertexBuffer = &vertexBuffer,
                                 .numVertices  = static_cast<uint32_t>(kTriangle.size()),
                             })
                             .endRendering();
                     }
-                    ImGuiApp::onRender(cb, rtv, dt);
+
+                    frameController.endFrame();
+                    frameController.present();
                 }
 
-            private:
-                rhi::VertexBuffer     m_VertexBuffer;
-                rhi::GraphicsPipeline m_GraphicsPipeline;
-            };
+                // Remember to wait idle explicitly before any destructors.
+                renderDevice.waitIdle();
 
-            CONFIG_MAIN(ImGuiExampleApp)
+                return 0;
+            }
+            catch (const std::exception& e)
+            {
+                VULTRA_CLIENT_CRITICAL("Exception: {}", e.what());
+            }
         ]]}, {configs = {languages = "c++23"}}))
     end)
