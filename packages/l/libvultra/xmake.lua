@@ -5,7 +5,7 @@ package("libvultra")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
 
-    add_versions("2025.08.040", "6011f12a952e9b5a353f9e9f93a0b245551f6b64")
+    add_versions("2025.08.041", "658d180d4511ef28295fc1e94649c26a0a9fa265")
     add_versions("2025.08.021", "eab2a7de77d621fa05df2830293575b1b87721e9")
 
     add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
