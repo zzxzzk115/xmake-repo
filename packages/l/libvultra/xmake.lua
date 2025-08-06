@@ -5,12 +5,14 @@ package("libvultra")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
 
+    add_versions("2025.08.080", "e952b064e4f0a890923fbcce4ebcb3891eca5fb2")
     add_versions("2025.08.042", "20e98f588b9ec0119ffe0757b158facc71237567")
     add_versions("2025.08.021", "eab2a7de77d621fa05df2830293575b1b87721e9")
 
     add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
     add_configs("tracky", {description = "Enable Tracky profiler support", default = true, type = "boolean"})
     add_configs("renderdoc", {description = "Enable RenderDoc support", default = true, type = "boolean"})
+    add_configs("vk_validation_stack_trace", {description = "Enable Vulkan validation stacktrace support", default = false, type = "boolean"})
 
     add_deps("fmt", {system=false})
     add_deps("spdlog")
@@ -74,8 +76,13 @@ package("libvultra")
         package:add("defines", "TRACKY_VULKAN")
         package:add("defines", "FMT_UNICODE=0")
 
-        if package:config("debug") and package:config("renderdoc") then
-            package:add("defines", "VULTRA_ENABLE_RENDERDOC")
+        if package:config("debug") then
+            if package:config("vk_validation_stack_trace") then
+                package:add("defines", "VULTRA_ENABLE_VK_VALIDATION_STACK_TRACE")
+            end
+            if package:config("renderdoc") then
+                package:add("defines", "VULTRA_ENABLE_RENDERDOC")
+            end
         end
     end)
 
