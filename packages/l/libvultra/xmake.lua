@@ -5,17 +5,7 @@ package("libvultra")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
 
-    add_versions("2025.08.088", "e011150280b6f4810fe1e9d913efb18a8a624d50")
-    add_versions("2025.08.087", "f1dc8e27eb43bd9539e159d017399bd0629bef41")
-    add_versions("2025.08.086", "a1b59a4d2af9814f461b285d7d24ebaef395acaa")
-    add_versions("2025.08.085", "6afc63c7d694b56c82de33f80d635d6ccfa8660b")
-    add_versions("2025.08.084", "4e15eb82be1fea1adcc609075d4253f4751f066e")
-    add_versions("2025.08.083", "e5eb3cfed852337438b02f5eff781214b7bfda31")
-    add_versions("2025.08.082", "cc66a98ec26bec94a66ab8ae3ac1f10cb92f46d1")
-    add_versions("2025.08.081", "a12202e072b0a8f523da91b6c959102e3dda3cb9")
-    add_versions("2025.08.080", "e952b064e4f0a890923fbcce4ebcb3891eca5fb2")
-    add_versions("2025.08.042", "20e98f588b9ec0119ffe0757b158facc71237567")
-    add_versions("2025.08.021", "eab2a7de77d621fa05df2830293575b1b87721e9")
+    add_versions("2025.09.08", "0aeaf756482465069a26a20951c6e1cc99873a8e")
 
     add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
     add_configs("tracky", {description = "Enable Tracky profiler support", default = true, type = "boolean"})
