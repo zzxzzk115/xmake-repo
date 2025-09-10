@@ -5,7 +5,7 @@ package("libvultra")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
 
-    add_versions("2025.09.11", "149f906bea1aea5b849e072d7f524ff313723fb8")
+    add_versions("2025.09.110", "441267cbbc40faf2ac171bf92b9342273c0f8bdc")
     add_versions("2025.09.10", "5fe1cd5e13249d28b638c3e0cdb4f8f692f91319")
     add_versions("2025.09.08", "0aeaf756482465069a26a20951c6e1cc99873a8e")
 
