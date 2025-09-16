@@ -5,12 +5,13 @@ package("libvultra")
 
     add_urls("https://github.com/zzxzzk115/libvultra.git")
 
+    add_versions("2025.09.17", "52241516c54a274ef89850e823a65afd55c22120")
     add_versions("2025.09.110", "441267cbbc40faf2ac171bf92b9342273c0f8bdc")
     add_versions("2025.09.10", "5fe1cd5e13249d28b638c3e0cdb4f8f692f91319")
     add_versions("2025.09.08", "0aeaf756482465069a26a20951c6e1cc99873a8e")
 
-    add_configs("tracy", {description = "Enable Tracy profiler support", default = true, type = "boolean"})
-    add_configs("tracky", {description = "Enable Tracky profiler support", default = true, type = "boolean"})
+    add_configs("tracy", {description = "Enable Tracy profiler support", default = false, type = "boolean"})
+    add_configs("tracky", {description = "Enable Tracky profiler support", default = false, type = "boolean"})
     add_configs("renderdoc", {description = "Enable RenderDoc support", default = true, type = "boolean"})
     add_configs("vk_validation_stack_trace", {description = "Enable Vulkan validation stacktrace support", default = false, type = "boolean"})
 
