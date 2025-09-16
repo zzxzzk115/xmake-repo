@@ -7,11 +7,15 @@ package("ktx-windows")
 
     add_versions("2025.09.11", "8ece71d8ff41619cceeb2d82a0ae90fdf915d39f")
 
-	add_links("ktx")
+    add_links("ktx")
+
+    on_load(function (package)
+		package:addenv("PATH", path.join(package:installdir(), "bin"))
+    end)
 
     on_install(function (package)
 		-- copy include, lib, and bin directories to install directory
-        os.cp(path.join("KTX-Software", package:plat(), package:arch(), "include"), package:installdir())
+		os.cp(path.join("KTX-Software", package:plat(), package:arch(), "include"), package:installdir())
 		os.cp(path.join("KTX-Software", package:plat(), package:arch(), "lib"), package:installdir())
 		os.cp(path.join("KTX-Software", package:plat(), package:arch(), "bin"), package:installdir())
     end)
