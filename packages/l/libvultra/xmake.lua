@@ -17,7 +17,7 @@ package("libvultra")
 
     add_deps("fmt", {system = false})
     add_deps("spdlog", "magic_enum", "entt", "glm", "stb", "cereal", "cpptrace")
-    add_deps("tracy 0.11.1", {configs = {on_demand = true}})
+    add_deps("tracy v0.12.2", {configs = {on_demand = true}})
     add_deps("stduuid", {configs = {span = true}})
     add_deps("tinyexr")
     add_deps("libsdl3", {system = false})
