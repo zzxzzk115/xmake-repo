@@ -43,6 +43,10 @@ package("ffmpeg")
     add_configs("bzlib",            {description = "Enable bzlib compression library.", default = false, type = "boolean"})
     add_configs("libx264",          {description = "Enable libx264 encoder.", default = false, type = "boolean"})
     add_configs("libx265",          {description = "Enable libx265 encoder.", default = false, type = "boolean"})
+    add_configs("libopenh264",      {description = "Enable openh264 encoder.", default = false, type = "boolean"})
+    add_configs("libaom",           {description = "Enable libaom encoder.", default = false, type = "boolean"})
+    add_configs("libsvtav1",        {description = "Enable libsvtav1 encoder.", default = false, type = "boolean"})
+    add_configs("libdav1d",         {description = "Enable libdav1d decoder.", default = false, type = "boolean"})
     add_configs("iconv",            {description = "Enable libiconv library.", default = false, type = "boolean"})
     add_configs("vaapi",            {description = "Enable vaapi library.", default = false, type = "boolean"})
     add_configs("vdpau",            {description = "Enable vdpau library.", default = false, type = "boolean"})
@@ -70,6 +74,14 @@ package("ffmpeg")
         add_deps("pkg-config")
     end
 
+    if on_check then
+        on_check("windows|arm64", function (package)
+            if not package:is_cross() then
+                raise("package(ffmpeg) unsupported windows arm64 native build, because it require arm64 msys2")
+            end
+        end)
+    end
+
     on_fetch("mingw", "linux", "macosx", function (package, opt)
         if opt.system then
             local result
@@ -87,18 +99,29 @@ package("ffmpeg")
     end)
 
     on_load(function (package)
-        local configdeps = {zlib    = "zlib",
-                            bzlib   = "bzip2",
-                            lzma    = "xz",
-                            libx264 = "x264",
-                            libx265 = "x265",
-                            iconv   = "libiconv",
-                            libdrm  = "libdrm"}
+        local configdeps = {
+            zlib        = "zlib",
+            bzlib       = "bzip2",
+            lzma        = "xz",
+            libx264     = "x264",
+            libx265     = "x265",
+            libopenh264 = "openh264",
+            iconv       = "libiconv",
+            libdrm      = "libdrm",
+            libaom      = "aom",
+            libsvtav1   = "svt-av1",
+            libdav1d    = "dav1d",
+        }
         for name, dep in pairs(configdeps) do
             if package:config(name) then
                 package:add("deps", dep)
             end
         end
+        if package:config("libsvtav1") then
+            -- TODO: patch build script support static svt-av1
+            package:add("deps", "svt-av1", {configs = {shared = true}})
+        end
+
         -- https://www.ffmpeg.org/platform.html#toc-Advanced-linking-configuration
         if package:config("pic") ~= false and package:is_plat("linux", "android") then
             package:add("shflags", "-Wl,-Bsymbolic")
@@ -114,6 +137,7 @@ package("ffmpeg")
             local configs = {
                 msystem = "MINGW64",
                 base_devel = true,
+                uchardet = true,
             }
             -- @see https://stackoverflow.com/questions/65438878/ffmpeg-build-on-windows-using-msvc-make-fails
             configs.make = true
@@ -141,6 +165,26 @@ package("ffmpeg")
                 end
             end
         end
+
+        -- check_lib dep only find from cxflags and ldflags
+        for _, i in ipairs({"zlib", "xz", "bzip2"}) do
+            local dep = package:dep(i)
+            if dep then
+                local linkdirs = path.unix(dep:installdir("lib"))
+                if package:has_tool("cc", "cl") then
+                    table.insert(configs, "--extra-ldflags=-LIBPATH:" .. linkdirs)
+                else
+                    table.insert(configs, "--extra-ldflags=-L" .. linkdirs)
+                end
+
+                local defines = table.wrap(dep:get("defines"))
+                for _, j in ipairs(defines) do
+                    table.insert(configs, "--extra-cflags=-D" .. j)
+                end
+                table.insert(configs, "--extra-cflags=-I" .. path.unix(dep:installdir("include")))
+            end
+        end
+
         if package:config("shared") then
             table.insert(configs, "--enable-shared")
             table.insert(configs, "--disable-static")
@@ -173,6 +217,9 @@ package("ffmpeg")
         elseif package:is_plat("linux") then
             table.insert(configs, "--target-os=linux")
             table.insert(configs, "--enable-pthreads")
+            if package:has_tool("cxx", "clang") then
+                table.insert(configs, "--cc=clang")
+            end
         elseif package:is_plat("macosx", "iphoneos") then
             table.insert(configs, "--target-os=darwin")
             if package:is_plat("macosx") then
@@ -228,6 +275,13 @@ package("ffmpeg")
                 if package:is_arch("arm", "arm64") then
                     envs.PATH = path.join(os.programdir(), "scripts") .. path.envsep() .. envs.PATH
                 end
+                -- fix build failure with gbk encoding
+                io.replace("configure", "cp_if_changed $TMPH config.h", [[
+                    config_encodings=$(uchardet $TMPH)
+                    case "$config_encodings" in GB18030|GBK|GB2312)
+                        { printf '\xEF\xBB\xBF'; iconv -f "$config_encodings" -t UTF-8 -c $TMPH; } > config.h;; 
+                    *) cp_if_changed $TMPH config.h;;
+                    esac]], {plain = true})
                 autoconf.install(package, configs, {envs = envs})
             else
                 import("core.base.option")
@@ -325,7 +379,7 @@ package("ffmpeg")
                     table.insert(cflags, "-mfpu=neon")
                     table.insert(cflags, "-mfloat-abi=hard")
                 end
-            else
+            elseif package:is_arch("arm*") then
                 table.insert(cflags, "-mfpu=neon")
                 table.insert(cflags, "-mfloat-abi=soft")
             end
@@ -337,8 +391,12 @@ package("ffmpeg")
             table.insert(configs, "--ar=" .. _translate_path(path.join(bin, "llvm-ar")))
             table.insert(configs, "--ranlib=" .. _translate_path(path.join(bin, "llvm-ranlib")))
             table.insert(configs, "--strip=" .. _translate_path(path.join(bin, "llvm-strip")))
-            table.insert(configs, "--extra-cflags=" .. table.concat(cflags, ' '))
-            table.insert(configs, "--extra-cxxflags=" .. table.concat(cxxflags, ' '))
+            if #cflags > 0 then
+                table.insert(configs, "--extra-cflags=" .. table.concat(cflags, ' '))
+            end
+            if #cxxflags > 0 then
+                table.insert(configs, "--extra-cxxflags=" .. table.concat(cxxflags, ' '))
+            end
             table.insert(configs, "--sysroot=" .. _translate_path(sysroot))
             table.insert(configs, "--cross-prefix=" .. _translate_path(cross_prefix))
             table.insert(configs, "--prefix=" .. _translate_path(package:installdir()))
