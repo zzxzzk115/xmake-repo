@@ -5,6 +5,7 @@ package("duckdb")
 
     add_urls("https://github.com/duckdb/duckdb/releases/download/$(version)/libduckdb-src.zip",
              "https://github.com/duckdb/duckdb.git")
+    add_versions("v1.4.4", "778434bdbda341a89dd9d2c97efcf8b834a921d4d11c6de77716a5886aa8c7fc")
     add_versions("v1.4.3", "a9d834d07524f483aa1132ee183169767008468cc485c25b2170b9e6eee47ef6")
     add_versions("v1.4.2", "ee7e178341ea8199ad52eabdff07aa89969f9904868eaa94e71efb31eaef7f2d")
     add_versions("v1.4.1", "81da1c9943f7b16e8a41456549fba72473ace3c83887e813e5610eb446c19781")
@@ -22,14 +23,16 @@ package("duckdb")
     add_versions("v0.10.0", "385e27aa67712813e4a07389465c4c5c45c431d97cddd35713b8a306d2a86f2d")
 
     on_install("macosx", "linux", function (package)
-        io.writefile("xmake.lua", [[
+        io.writefile("xmake.lua", string.format([[
             add_rules("mode.debug", "mode.release")
+            add_rules("utils.install.cmake_importfiles")
+            set_version("%s")
             set_languages("c++17")
             target("duckdb")
                 set_kind("$(kind)")
                 add_files("duckdb.cpp")
                 add_headerfiles("duckdb.hpp", "duckdb.h")
-        ]])
+        ]], package:version()))
         import("package.tools.xmake").install(package)
     end)
 
