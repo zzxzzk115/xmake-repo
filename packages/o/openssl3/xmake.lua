@@ -34,7 +34,9 @@ package("openssl3")
 
     -- https://security.stackexchange.com/questions/173425/how-do-i-calculate-md2-hash-with-openssl
     add_configs("md2", {description = "Enable MD2 on OpenSSl3 or not", default = false, type = "boolean"})
-    if is_plat("cross", "android", "iphoneos", "wasm") then
+    add_configs("multi-threading", {description = "Enable multi-threading support.", default = true, type = "boolean"})
+
+    if is_plat("wasm") then
         add_configs("shared", {description = "Build shared library.", default = false, type = "boolean", readonly = true})
     end
 
@@ -72,10 +74,10 @@ package("openssl3")
         if package:is_plat("windows", "mingw", "msys") then
             package:add("syslinks", "ws2_32", "user32", "crypt32", "advapi32")
         elseif package:is_plat("linux", "bsd", "cross") then
-            package:add("syslinks", "pthread", "dl")
-        end
-        if package:is_plat("linux", "mingw", "msys") and package:is_arch("x86_64") then
-            package:add("linkdirs", "lib64")
+            package:add("syslinks", "dl")
+            if (package:config("multi-threading")) then
+                package:add("syslinks", "pthread")
+            end
         end
         if package:is_plat("linux") then
             package:add("extsources", "apt::libssl-dev")
@@ -104,6 +106,7 @@ package("openssl3")
         if package:config("md2") then
             table.insert(configs, "enable-md2")
         end
+        table.insert(configs, package:config("multi-threading") and "threads" or "no-threads")
 
         if package:config("jom") and jom then
             table.insert(configs, "no-makedepend")
@@ -133,7 +136,7 @@ package("openssl3")
     end)
 
     on_install("mingw", "msys", function (package)
-        local configs = {"Configure", "no-tests"}
+        local configs = {"Configure", "--libdir=lib", "no-tests"}
         table.insert(configs, package:is_arch("i386", "x86") and "mingw" or "mingw64")
         table.insert(configs, package:config("shared") and "shared" or "no-shared")
         local installdir = package:installdir()
@@ -147,6 +150,7 @@ package("openssl3")
         if package:config("md2") then
             table.insert(configs, "enable-md2")
         end
+        table.insert(configs, package:config("multi-threading") and "threads" or "no-threads")
 
         local buildenvs = import("package.tools.autoconf").buildenvs(package)
         buildenvs.RC = package:build_getenv("mrc")
@@ -164,15 +168,13 @@ package("openssl3")
         os.vrunv("perl", configs, {envs = buildenvs})
         import("package.tools.make").build(package)
         import("package.tools.make").make(package, {"install_sw"})
-        if os.isdir(package:installdir("lib64")) and package:is_arch("x86_64") then
-            os.trycp(path.join(package:installdir("lib64"), "*"), package:installdir("lib"))
-        end
     end)
 
     on_install("linux", "macosx", "bsd", function (package)
         -- https://wiki.openssl.org/index.php/Compilation_and_Installation#PREFIX_and_OPENSSLDIR
         local buildenvs = import("package.tools.autoconf").buildenvs(package)
         local configs = {"--openssldir=" .. package:installdir(),
+                         "--libdir=lib",
                          "--prefix=" .. package:installdir()}
         table.insert(configs, package:config("shared") and "shared" or "no-shared")
         if package:debug() then
@@ -182,16 +184,14 @@ package("openssl3")
         if package:config("md2") then
             table.insert(configs, "enable-md2")
         end
+        table.insert(configs, package:config("multi-threading") and "threads" or "no-threads")
 
         os.vrunv("./config", configs, {envs = buildenvs})
         local makeconfigs = {CFLAGS = buildenvs.CFLAGS, ASFLAGS = buildenvs.ASFLAGS}
         import("package.tools.make").build(package, makeconfigs)
         import("package.tools.make").make(package, {"install_sw"})
         if package:config("shared") then
-            os.tryrm(path.join(package:installdir("lib"), "*.a"), path.join(package:installdir("lib64"), "*.a"))
-        end
-        if package:is_plat("linux") and os.isdir(package:installdir("lib64")) and package:is_arch("x86_64") then
-            os.trycp(path.join(package:installdir("lib64"), "*"), package:installdir("lib"))
+            os.tryrm(path.join(package:installdir("lib"), "*.a"))
         end
     end)
 
@@ -231,15 +231,16 @@ package("openssl3")
 
         local target = target_plat .. "-" .. target_arch
         local configs = {target,
-                         "-DOPENSSL_NO_HEARTBEATS",
-                         "no-shared",
-                         "no-threads",
+                         package:config("shared") and "shared" or "no-shared",
+                         "--libdir=lib",
                          "--openssldir=" .. package:installdir():gsub("\\", "/"),
                          "--prefix=" .. package:installdir():gsub("\\", "/")}
 
         if package:config("md2") then
             table.insert(configs, "enable-md2")
         end
+        table.insert(configs, package:config("multi-threading") and "threads" or "no-threads")
+
         if package:is_plat("wasm") then
             -- @see https://github.com/openssl/openssl/issues/12174
             table.insert(configs, "no-afalgeng")
@@ -264,6 +265,9 @@ package("openssl3")
         local makeconfigs = {CFLAGS = buildenvs.CFLAGS, ASFLAGS = buildenvs.ASFLAGS}
         import("package.tools.make").build(package, makeconfigs)
         import("package.tools.make").make(package, {"install_sw"})
+        if package:config("shared") then
+            os.tryrm(path.join(package:installdir("lib"), "*.a"))
+        end
     end)
 
     on_test(function (package)
