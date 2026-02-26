@@ -12,13 +12,15 @@ package("vshadersystem")
     add_deps("glslang 1.4.309+0", {configs = { debug = false }, system = false})
     add_deps("xxhash")
 
+    on_load(function (package)
+        package:addenv("PATH", "bin")
+    end)
+
     on_install(function (package)
         local configs = {
             vshadersystem_build_examples = false,
         }
         import("package.tools.xmake").install(package, configs)
-
-        package:addenv("PATH", "bin")
     end)
 
     on_test(function (package)
