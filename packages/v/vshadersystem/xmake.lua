@@ -7,11 +7,10 @@ package("vshadersystem")
              "https://github.com/zzxzzk115/vshadersystem.git")
 
     add_versions("v0.5.0", "c3c9f5386c507eb43f1cea07f64f1e55b991397a6f7469b88e4be856c06c5df4")
-    add_versions("v0.3.0", "b40115d6c334723c696ffc08d774a9a181af85b2892f0f76072679a6822e2658")
-    add_versions("v0.2.0", "79a8894acfe8d3f67b604c51691a7720fb2fbb3e61c5ab406bd754e0e40c6019")
 
     add_deps("spirv-cross vulkan-sdk-1.4.309", {configs = { shared = true, debug = false }, system = false})
     add_deps("glslang 1.4.309+0", {configs = { debug = false }, system = false})
+    add_deps("slang vulkan-sdk-1.4.309", {configs = { shared = true, debug = false }, system = false})
     add_deps("xxhash")
 
     on_load(function (package)
@@ -58,7 +57,7 @@ package("vshadersystem")
 
                 req.options.stage = ShaderStage::eFrag;
 
-                auto r = build_shader(req);
+                auto r = build_single_shader(req);
 
                 if (!r.isOk())
                     return 1;
