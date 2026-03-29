@@ -6,11 +6,10 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/vshadersystem.git")
 
-    add_versions("v0.5.1", "0ae3dfabd2b5ff6650aa917c163eb8528705e74342af74cd7c055a6c2775ce04")
+    add_versions("v0.6.0", "6bb150a2b98d972ecb96493d3df1b855fbbd70d799b43c92e0e13d94d3c73e30")
 
     add_deps("spirv-cross vulkan-sdk-1.4.309", {configs = { shared = true, debug = false }, system = false})
     add_deps("glslang 1.4.309+0", {configs = { debug = false }, system = false})
-    add_deps("slang v2025.6.3", {configs = { shared = true, debug = false }, system = false})
     add_deps("xxhash")
 
     on_load(function (package)
