@@ -118,11 +118,11 @@ package("imgui")
     add_configs("win32",            {description = "Enable the win32 backend", default = false, type = "boolean"})
     add_configs("osx",              {description = "Enable the OS X backend", default = false, type = "boolean"})
     add_configs("wgpu",             {description = "Enable the wgpu backend", default = false, type = "boolean"})
+    add_configs("android",          {description = "Enable the android backend", default = false, type = "boolean"})
     add_configs("wgpu_backend",     {description = "Use specific wgpu backend", default = "wgpu", type = "string", values = {"wgpu", "dawn"}})
     add_configs("freetype",         {description = "Use FreeType to build and rasterize the font atlas", default = false, type = "boolean"})
     add_configs("user_config",      {description = "Use user config (disables test!)", default = nil, type = "string"})
     add_configs("wchar32",          {description = "Use 32-bit for ImWchar (default is 16-bit)", default = false, type = "boolean"})
-
 
     -- deprecated configs (kept for backwards compatibility)
     add_configs("sdlrenderer",  {description = "(deprecated)", default = false, type = "boolean"})
