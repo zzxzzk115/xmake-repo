@@ -7,26 +7,26 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
-    add_versions("source:v0.7.0", "df3633ba9dfb75a000999f45ca26a519cdaf9359e748204e65a09fcf49a15caf")
-    add_versions("git:v0.7.0", "v0.7.0")
+    add_versions("source:v0.7.1", "d501a2051679b3fad158e9560704f2ee49541d55e0d0681ee3613eb18e2b57b8")
+    add_versions("git:v0.7.1", "v0.7.1")
 
     on_load(function (package)
-        if package:version():ge("0.7.0") then
+        if package:version():ge("0.7.1") then
             local prebuilt = {
-                ["android-arm64-v8a"] = "3a73b901f79605a59dd2f921018d8a0c30827d76c118a7769a1c3a0692f27262",
-                ["android-armeabi-v7a"] = "10d0b52d309d052400f28d2ffb21a239b6df20bc265bc8831ccab211121628e3",
-                ["android-x86_64"] = "0ac91f42e151cbc74665dd82ec5a3c57ed9f42a61454b03e1a10a1fc578a0a4b",
-                ["linux-arm64"] = "3b4d9510e172d43350c69ce04e32407933f8ff620eee6401b2e59c493120626f",
-                ["linux-x86"] = "9ea96b63f31de6c854175162dc78e43bdb72f66c5b22c5ad2b27c339c6578781",
-                ["linux-i386"] = "9ea96b63f31de6c854175162dc78e43bdb72f66c5b22c5ad2b27c339c6578781",
-                ["linux-x64"] = "4fff2349cd434b51c363bc5d91eb1a4bf3bf918aec76f289e197437140dcd343",
-                ["linux-x86_64"] = "4fff2349cd434b51c363bc5d91eb1a4bf3bf918aec76f289e197437140dcd343",
-                ["macosx-arm64"] = "5c23fed7c5ae3460e80ee7860a2cd9731747e2b9c9c6482d22a17f9b51b7d619",
-                ["windows-arm64"] = "41c1a62815c5dfcb604ae3366be4176aed1e9ca0abf4fc0c205b8811e2ec4953",
-                ["windows-x64"] = "34c5cf8d30e244e5a3be9ae3f54cc71ef46bb4738be8ef5326e96a517743ff31",
-                ["windows-x86_64"] = "34c5cf8d30e244e5a3be9ae3f54cc71ef46bb4738be8ef5326e96a517743ff31",
-                ["mingw-x64"] = "34c5cf8d30e244e5a3be9ae3f54cc71ef46bb4738be8ef5326e96a517743ff31",
-                ["mingw-x86_64"] = "34c5cf8d30e244e5a3be9ae3f54cc71ef46bb4738be8ef5326e96a517743ff31"
+                ["android-arm64-v8a"] = "885d57e6d5251b0a2b979f153e5aebdda28f0f920068c19775c664e0f2099974",
+                ["android-armeabi-v7a"] = "679891b3b6ce811a407bbf94f70a78cb482c8b05e48c530851d5e427c1c7cd59",
+                ["android-x86_64"] = "d73afcf02a0d0c167ad32c4d6a4f9161509c85c3d8bbe8b9aac9710d74f5f137",
+                ["linux-arm64"] = "e106b809d404fc3a60658a96c24871b64a676680867711339e364bd2585af79e",
+                ["linux-x86"] = "afa8ab72f2122bf5ab1775189be1dcb23a4fb7c3d9eb590995a22fe4b80ce9d3",
+                ["linux-i386"] = "afa8ab72f2122bf5ab1775189be1dcb23a4fb7c3d9eb590995a22fe4b80ce9d3",
+                ["linux-x64"] = "03aa22242670d2addc3c73d40a9ebb0db81d98f40436fdbaf81bd52c25203502",
+                ["linux-x86_64"] = "03aa22242670d2addc3c73d40a9ebb0db81d98f40436fdbaf81bd52c25203502",
+                ["macosx-arm64"] = "193c9662b8bdc433e8e6a496ec9bde78d62c4ac2652b2a3470629074656d426d",
+                ["windows-arm64"] = "103d7643189f8b389cfe749804a127765e25efe25d89db6d06179f2b08946415",
+                ["windows-x64"] = "e0cb0c7be0c9deea8398f290ffe8225ed11753c14cfba818a909711f11bf9b97",
+                ["windows-x86_64"] = "e0cb0c7be0c9deea8398f290ffe8225ed11753c14cfba818a909711f11bf9b97",
+                ["mingw-x64"] = "e0cb0c7be0c9deea8398f290ffe8225ed11753c14cfba818a909711f11bf9b97",
+                ["mingw-x86_64"] = "e0cb0c7be0c9deea8398f290ffe8225ed11753c14cfba818a909711f11bf9b97"
             }
             local assets = {
                 ["linux-x64"] = "linux-x86_64",
@@ -40,7 +40,7 @@ package("vshadersystem")
             assert(sha, "package(vshadersystem): unsupported prebuilt target: " .. key)
             local asset = assets[key] or key
             package:set("urls", "https://github.com/zzxzzk115/vshadersystem/releases/download/$(version)/vshadersystem-prebuilt-$(version)-" .. asset .. ".zip")
-            package:add("versions", "v0.7.0", sha)
+            package:add("versions", "v0.7.1", sha)
             package:add("links", "vshadersystem", "spirv-tools", "tint")
             package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = {shared = true, debug = false}, system = false, public = true})
             package:add("deps", "glslang 1.4.335+0", {configs = {debug = false}, system = false, public = true})
@@ -55,7 +55,7 @@ package("vshadersystem")
     end)
 
     on_install(function (package)
-        if package:version():ge("0.7.0") then
+        if package:version():ge("0.7.1") then
             local version = tostring(package:version())
             local rootdir = os.dirs("vshadersystem-prebuilt-" .. version .. "-*")[1]
             if not rootdir then
@@ -72,7 +72,7 @@ package("vshadersystem")
     end)
 
     on_test(function (package)
-        if package:version():ge("0.7.0") and not package:is_plat("android") then
+        if package:version():ge("0.7.1") and not package:is_plat("android") then
             os.vrun("vshaderc --help")
         end
         assert(package:check_cxxsnippets({test = [[
