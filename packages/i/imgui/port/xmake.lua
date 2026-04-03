@@ -51,7 +51,7 @@ if has_config("volk") then
     add_requires("volk")
 end
 
-if has_config("wgpu") then
+if has_config("wgpu") and get_config("wgpu_backend") == "wgpu" then
     add_requires("wgpu-native")
 end
 
@@ -184,7 +184,10 @@ target("imgui")
     if has_config("wgpu") then
         add_files("backends/imgui_impl_wgpu.cpp")
         add_headerfiles("(backends/imgui_impl_wgpu.h)")
-        add_packages("wgpu-native")
+
+        if get_config("wgpu_backend") == "wgpu" then
+            add_packages("wgpu-native")
+        end
 
         if has_config("wgpu_backend") then
             add_defines("IMGUI_IMPL_WEBGPU_BACKEND_" .. string.upper(get_config("wgpu_backend")))
