@@ -182,8 +182,10 @@ package("imgui")
             package:add("deps", "volk")
         end
         if package:config("wgpu") then
-            package:add("deps", "wgpu-native")
             if package:config("wgpu_backend") then
+                if package:config("wgpu_backend") == "wgpu" then
+                    package:add("deps", "wgpu-native")
+                end
                 package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_" .. string.upper(package:config("wgpu_backend")))
             end
         end
