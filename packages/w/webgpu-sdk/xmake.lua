@@ -28,7 +28,10 @@ package("webgpu-sdk")
                 package:add("rpathdirs", package:installdir("lib"), {public = true})
             end
         else
-            package:add("ldflags", "-sUSE_WEBGPU", "-sUSE_GLFW=3", {force = true, public = true})
+            -- Emscripten removed -sUSE_WEBGPU; use emdawnwebgpu port to provide <webgpu/webgpu.h>.
+            package:add("cflags", "--use-port=emdawnwebgpu", {force = true, public = true})
+            package:add("cxxflags", "--use-port=emdawnwebgpu", {force = true, public = true})
+            package:add("ldflags", "--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true, public = true})
         end
         if package:is_plat("macosx") then
             package:add("syslinks", "objc")
