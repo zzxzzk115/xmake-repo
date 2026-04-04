@@ -225,6 +225,7 @@ package("imgui")
             win32            = package:config("win32"),
             osx              = package:config("osx"),
             wgpu             = package:config("wgpu"),
+            wgpu_backend     = package:config("wgpu_backend"),
             freetype         = package:config("freetype"),
             user_config      = package:config("user_config"),
             wchar32          = package:config("wchar32")
