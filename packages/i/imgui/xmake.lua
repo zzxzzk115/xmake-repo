@@ -190,9 +190,9 @@ package("imgui")
                     package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
                 elseif package:config("wgpu_backend") == "webgpu-sdk" then
                     package:add("deps", "webgpu-sdk")
-                    -- webgpu-sdk ships wgpu-native backend and glfw3webgpu helpers.
-                    -- Keep glfw backend available but do not add glfw as a direct dependency.
-                    package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+                    if not is_plat("wasm") then
+                        package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+                    end
                 end
             end
         end

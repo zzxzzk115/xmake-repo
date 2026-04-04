@@ -202,7 +202,9 @@ target("imgui")
             add_defines("IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
         elseif get_config("wgpu_backend") == "webgpu-sdk" then
             add_packages("webgpu-sdk")
-            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+            if not is_plat("wasm") then
+                add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+            end
         end
     end
 
