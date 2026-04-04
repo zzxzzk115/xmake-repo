@@ -192,7 +192,13 @@ target("imgui")
     end
 
     if has_config("wgpu") then
-        add_files("backends/imgui_impl_wgpu.cpp")
+        if is_plat("macosx") then
+            -- webgpu-sdk's native webgpu headers may include Objective-C declarations on macOS.
+            -- Compile this translation unit as Objective-C++ for compatibility.
+            add_files("backends/imgui_impl_wgpu.cpp", {cxxflags = "-x objective-c++"})
+        else
+            add_files("backends/imgui_impl_wgpu.cpp")
+        end
         add_headerfiles("(backends/imgui_impl_wgpu.h)")
 
         if get_config("wgpu_backend") == "wgpu" then
