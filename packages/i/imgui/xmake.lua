@@ -119,7 +119,7 @@ package("imgui")
     add_configs("osx",              {description = "Enable the OS X backend", default = false, type = "boolean"})
     add_configs("wgpu",             {description = "Enable the wgpu backend", default = false, type = "boolean"})
     add_configs("android",          {description = "Enable the android backend", default = false, type = "boolean"})
-    add_configs("wgpu_backend",     {description = "Use specific wgpu backend", default = "wgpu", type = "string", values = {"wgpu", "dawn"}})
+    add_configs("wgpu_backend",     {description = "Use specific wgpu backend", default = "wgpu", type = "string", values = {"wgpu", "dawn", "webgpu-sdk"}})
     add_configs("freetype",         {description = "Use FreeType to build and rasterize the font atlas", default = false, type = "boolean"})
     add_configs("user_config",      {description = "Use user config (disables test!)", default = nil, type = "string"})
     add_configs("wchar32",          {description = "Use 32-bit for ImWchar (default is 16-bit)", default = false, type = "boolean"})
@@ -185,8 +185,15 @@ package("imgui")
             if package:config("wgpu_backend") then
                 if package:config("wgpu_backend") == "wgpu" then
                     package:add("deps", "wgpu-native")
+                    package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+                elseif package:config("wgpu_backend") == "dawn" then
+                    package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
+                elseif package:config("wgpu_backend") == "webgpu-sdk" then
+                    package:add("deps", "webgpu-sdk")
+                    -- webgpu-sdk ships wgpu-native backend and glfw3webgpu helpers.
+                    -- Keep glfw backend available but do not add glfw as a direct dependency.
+                    package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
                 end
-                package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_" .. string.upper(package:config("wgpu_backend")))
             end
         end
         if package:config("freetype") then
