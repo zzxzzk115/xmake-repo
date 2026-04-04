@@ -24,10 +24,12 @@ package("webgpu-sdk")
         if not package:is_plat("wasm") then
             package:add("links", "wgpu_native")
             package:add("deps", "glfw", {public = true})
+        else
+            package:add("ldflags", "-sUSE_WEBGPU", "-sUSE_GLFW=3", {force = true, public = true})
         end
         if package:is_plat("macosx") then
             package:add("syslinks", "objc")
-            package:add("frameworks", "Metal", "QuartzCore", "Foundation")
+            package:add("frameworks", "Cocoa", "QuartzCore")
         end
     end)
 
