@@ -24,7 +24,7 @@ package("webgpu-sdk")
         if not package:is_plat("wasm") then
             package:add("links", "wgpu_native")
             package:add("deps", "glfw", {public = true})
-            package:add("rpathdirs", path.join(package:installdir(), "lib"), {public = true})
+            package:add("ldflags", "-Wl,-rpath," .. package:installdir("lib"))
         else
             package:add("ldflags", "-sUSE_WEBGPU", "-sUSE_GLFW=3", {force = true, public = true})
         end
