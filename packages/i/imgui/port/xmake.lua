@@ -20,7 +20,7 @@ option("volk",             {showmenu = true,  default = false})
 option("win32",            {showmenu = true,  default = false})
 option("osx",              {showmenu = true,  default = false})
 option("wgpu",             {showmenu = true,  default = false})
-option("wgpu_backend",     {showmenu = true,  default = "wgpu", type = "string", values = {"wgpu", "dawn"}})
+option("wgpu_backend",     {showmenu = true,  default = "wgpu", type = "string", values = {"wgpu", "dawn", "webgpu-sdk"}})
 option("freetype",         {showmenu = true,  default = false})
 option("user_config",      {showmenu = true,  default = nil, type = "string"})
 option("wchar32",          {showmenu = true,  default = false})
@@ -53,6 +53,8 @@ end
 
 if has_config("wgpu") and get_config("wgpu_backend") == "wgpu" then
     add_requires("wgpu-native")
+elseif has_config("wgpu") and get_config("wgpu_backend") == "webgpu-sdk" then
+    add_requires("webgpu-sdk")
 end
 
 if has_config("freetype") then
@@ -95,10 +97,18 @@ target("imgui")
         add_headerfiles("(backends/imgui_impl_dx12.h)")
     end
 
-    if has_config("glfw") then
+    local use_glfw_backend = has_config("glfw")
+        or (has_config("wgpu") and get_config("wgpu_backend") == "webgpu-sdk")
+
+    if use_glfw_backend then
         add_files("backends/imgui_impl_glfw.cpp")
         add_headerfiles("(backends/imgui_impl_glfw.h)")
-        add_packages("glfw")
+        if has_config("glfw") then
+            add_packages("glfw")
+        else
+            -- For wgpu_backend=webgpu-sdk, only link glfw and avoid a direct glfw dependency.
+            add_links("glfw")
+        end
     end
 
     if has_config("opengl2") then
@@ -187,10 +197,12 @@ target("imgui")
 
         if get_config("wgpu_backend") == "wgpu" then
             add_packages("wgpu-native")
-        end
-
-        if has_config("wgpu_backend") then
-            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_" .. string.upper(get_config("wgpu_backend")))
+            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+        elseif get_config("wgpu_backend") == "dawn" then
+            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
+        elseif get_config("wgpu_backend") == "webgpu-sdk" then
+            add_packages("webgpu-sdk")
+            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
         end
     end
 
