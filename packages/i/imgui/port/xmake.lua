@@ -204,6 +204,10 @@ target("imgui")
             add_packages("webgpu-sdk")
             if not is_plat("wasm") then
                 add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+            else
+                -- Newer emscripten requires emdawnwebgpu port for <webgpu/webgpu.h>.
+                add_cxxflags("--use-port=emdawnwebgpu", {force = true})
+                add_ldflags("--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true})
             end
         end
     end

@@ -192,6 +192,10 @@ package("imgui")
                     package:add("deps", "webgpu-sdk")
                     if not is_plat("wasm") then
                         package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
+                    else
+                        -- Newer emscripten exposes webgpu/webgpu.h via emdawnwebgpu port.
+                        package:add("cxxflags", "--use-port=emdawnwebgpu", {force = true, public = true})
+                        package:add("ldflags", "--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true, public = true})
                     end
                 end
             end
