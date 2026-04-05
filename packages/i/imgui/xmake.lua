@@ -194,6 +194,8 @@ package("imgui")
                         package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
                     else
                         -- Newer emscripten exposes webgpu/webgpu.h via emdawnwebgpu port.
+                        -- Use Dawn backend explicitly to avoid selecting obsolete Emscripten WGPU APIs.
+                        package:add("defines", "IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
                         package:add("cxxflags", "--use-port=emdawnwebgpu", {force = true, public = true})
                         package:add("ldflags", "--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true, public = true})
                     end
