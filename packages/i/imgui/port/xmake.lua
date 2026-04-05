@@ -212,6 +212,8 @@ target("imgui")
                 add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
             else
                 -- Newer emscripten requires emdawnwebgpu port for <webgpu/webgpu.h>.
+                -- Use Dawn backend explicitly to avoid selecting obsolete Emscripten WGPU APIs.
+                add_defines("IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
                 add_cxxflags("--use-port=emdawnwebgpu", {force = true})
                 add_ldflags("--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true})
             end
