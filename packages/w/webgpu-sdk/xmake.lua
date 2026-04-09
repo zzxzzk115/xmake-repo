@@ -5,16 +5,16 @@ package("webgpu-sdk")
 
     if is_plat("windows") and is_arch("x64", "x86_64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-windows-x64.zip")
-        add_versions("v0.1.0", "7cc0140f77d6a57a037a64707f5ab633a351eb0879fbaf85675c7f2a173d722d")
+        add_versions("v0.1.1", "b81240fb5f3abef67fb4f790d5bc9752cc4db3737df94f9a0b995c020c891600")
     elseif is_plat("linux") and is_arch("x86_64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-linux-x86_64.zip")
-        add_versions("v0.1.0", "85459227cab53d25e0eed3ad052a9591fb00264909906abf8b2bdbd8c827e066")
+        add_versions("v0.1.1", "851f2ccf2f0ac635d19633cc8a59f754e3d86381fdd7d4216519ab362febb7f9")
     elseif is_plat("macosx") and is_arch("arm64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-macosx-arm64.zip")
-        add_versions("v0.1.0", "ebb310fcebcfc6c14a011d3d6bb31d8dab96d1000b3636e4d030e0a0c386cec5")
+        add_versions("v0.1.1", "9924c56d785554ba6f76a0741adc3cf845af8ef101252239287152328ba32758")
     elseif is_plat("wasm") and is_arch("wasm32") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-wasm-wasm32.zip")
-        add_versions("v0.1.0", "6f2dc130f9649bd9e7a2eabfb38008adb5b65e3b96cb13056df07aa045fb83a6")
+        add_versions("v0.1.1", "e9188df90c2397dc114c31df4605342a75d7c01425c5c317f97ef7b49ab5e1ad")
     end
 
     add_includedirs("include", "include/webgpu")
@@ -24,6 +24,7 @@ package("webgpu-sdk")
         if not package:is_plat("wasm") then
             package:add("links", "wgpu_native")
             package:add("deps", "glfw", {public = true})
+            package:addenv("PATH", "lib")
             if package:is_plat("linux", "macosx") then
                 package:add("rpathdirs", package:installdir("lib"), {public = true})
             end
