@@ -7,9 +7,9 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
-    add_versions("source:v0.8.1", "7abcc865f5c5df541128f0527a99dca24e26bdad3faca246c09b802c33e40efe")
+    add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
-    add_versions("git:v0.8.1", "v0.8.1")
+    add_versions("git:v0.8.2", "v0.8.2")
     add_versions("git:v0.7.2", "v0.7.2")
 
     on_load(function (package)
@@ -21,20 +21,20 @@ package("vshadersystem")
                 local prebuilt
                 if package:version():ge("0.8.0") then
                     prebuilt = {
-                        ["android-arm64-v8a"] = "6f05d27ac6d9dcfedbe6ed56c7bf717434f679a8f25f2f5471a439741cf85deb",
-                        ["android-armeabi-v7a"] = "386ba7f61e950b0e3e544f732e1ad219f268d7837face80aff28108a2a2f7e6c",
-                        ["android-x86_64"] = "c52d2f2a04a73c24a6b7b39090111167a45d345d205b51d401fdd68efeb2d62d",
-                        ["linux-arm64"] = "3872bc3e5f74baaa94d638cf1e7922d865aaef97ae4a0595b8bc3bcb75f23062",
-                        ["linux-x86"] = "2e7c639d35e088858fde7468b11533cd329292872d551fc2a394f9eddd8f3d25",
-                        ["linux-i386"] = "2e7c639d35e088858fde7468b11533cd329292872d551fc2a394f9eddd8f3d25",
-                        ["linux-x64"] = "311fd785015439ed94c0ebd12f2bf4b5d75bee08d2e8d518157d573f6188489b",
-                        ["linux-x86_64"] = "311fd785015439ed94c0ebd12f2bf4b5d75bee08d2e8d518157d573f6188489b",
-                        ["macosx-arm64"] = "2395beeb0c9249ffc9a10dded85fc1d496e5ccc5b18bc1a16e006d8abd70bed4",
-                        ["wasm-wasm32"] = "374b57517b8182373e3cc9137477d4ac3cdec870e9df5d2f48d80cf197958bd9",
-                        ["windows-x64"] = "a1af3d4f8dff5628ec1dfcabefb61a173504b4f1bb20271fe1397b8fa1f332dd",
-                        ["windows-x86_64"] = "a1af3d4f8dff5628ec1dfcabefb61a173504b4f1bb20271fe1397b8fa1f332dd",
-                        ["mingw-x64"] = "a1af3d4f8dff5628ec1dfcabefb61a173504b4f1bb20271fe1397b8fa1f332dd",
-                        ["mingw-x86_64"] = "a1af3d4f8dff5628ec1dfcabefb61a173504b4f1bb20271fe1397b8fa1f332dd"
+                        ["android-arm64-v8a"] = "3a5f5ed0582da3daf6e7f4d80291c54584235a1cc9a9e54cd2f483c439856844",
+                        ["android-armeabi-v7a"] = "cbd7bdd6d5a51236599decb52e8eecbd6f02cbc2f29404e5666a51cd12c6b2ac",
+                        ["android-x86_64"] = "ef6f589008a72e53c89953dff33f954f8950de074f8b97de1a44ad83e882f38f",
+                        ["linux-arm64"] = "d99976e1e34851faea6f3193c0106894bb37a73be8d4b9d42d25d18a0f576218",
+                        ["linux-x86"] = "5dc44b4ad35af20ea900c0615a96ad2a5e837d38b748fa58dbf535cc61407acb",
+                        ["linux-i386"] = "5dc44b4ad35af20ea900c0615a96ad2a5e837d38b748fa58dbf535cc61407acb",
+                        ["linux-x64"] = "936ecb003c482490cc05191da3f745875e16786477d79d6c7bb18c6057670cd6",
+                        ["linux-x86_64"] = "936ecb003c482490cc05191da3f745875e16786477d79d6c7bb18c6057670cd6",
+                        ["macosx-arm64"] = "04c11326ee06adcff019042bd15125337474f99f99d8c82d6cf1583b373fe3b0",
+                        ["wasm-wasm32"] = "0b92eab22415335ce46e86c8cab4ca9e19ea5b239b6c5201a28a05aa71093f70",
+                        ["windows-x64"] = "c9b1773dad2c2a4ea610840171843f7f9cc4e6e51034f44833264c4a2236b796",
+                        ["windows-x86_64"] = "c9b1773dad2c2a4ea610840171843f7f9cc4e6e51034f44833264c4a2236b796",
+                        ["mingw-x64"] = "c9b1773dad2c2a4ea610840171843f7f9cc4e6e51034f44833264c4a2236b796",
+                        ["mingw-x86_64"] = "c9b1773dad2c2a4ea610840171843f7f9cc4e6e51034f44833264c4a2236b796"
                     }
                 else
                     prebuilt = {
@@ -70,7 +70,7 @@ package("vshadersystem")
                 package:add("versions", version, sha)
             end
             package:add("links", "vshadersystem", "spirv-tools", "tint")
-            package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = {shared = true, debug = false}, system = false, public = true})
+            package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = {debug = false}, system = false, public = true})
             package:add("deps", "glslang 1.4.335+0", {configs = {debug = false}, system = false, public = true})
             package:add("deps", "xxhash", {public = true})
             package:add("links", "xxhash")
