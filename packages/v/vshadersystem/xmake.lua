@@ -6,20 +6,74 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
-    add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
+    add_versions("source:v0.8.3", "62d6dc48d483dc9a91fb8d71211e5e2d63b39be9e4856dbea36bf46fe322618d")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
+    add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
+    add_versions("git:v0.8.3", "v0.8.3")
     add_versions("git:v0.8.2", "v0.8.2")
     add_versions("git:v0.7.2", "v0.7.2")
+
+    local function _windows_prebuilt_asset(package)
+        if not package:is_plat("windows") or not package:is_arch("x64", "x86_64") then
+            return
+        end
+        if package:debug() or package:has_runtime("MDd", "MTd") then
+            return
+        end
+
+        local runtime = package:has_runtime("MT") and "mt" or "md"
+        local toolset = "latest"
+        local msvc = package:toolchain("msvc")
+        local vs_toolset = msvc and msvc:config("vs_toolset")
+        if vs_toolset and vs_toolset:startswith("14.29") then
+            toolset = "14.29"
+        end
+        return "windows-x64-msvc-" .. toolset .. "-" .. runtime
+    end
+
+    local function _prebuilt_asset(package)
+        local windows_asset = _windows_prebuilt_asset(package)
+        if windows_asset then
+            return windows_asset
+        end
+        if package:is_plat("windows", "mingw") then
+            return
+        end
+
+        local assets = {
+            ["linux-x64"] = "linux-x86_64",
+            ["windows-x86_64"] = "windows-x64",
+            ["wasm-wasm32"] = "wasm-wasm32"
+        }
+        local key = package:plat() .. "-" .. package:arch()
+        return assets[key] or key
+    end
 
     on_load(function (package)
         if package:version():ge("0.7.2") then
             local version = tostring(package:version())
-            -- Windows debug/MDd/MTd must use source build to avoid CRT mismatch with release prebuilt.
-            local use_prebuilt = not (package:is_plat("windows") and (package:debug() or package:has_runtime("MDd", "MTd")))
-            if use_prebuilt then
+            local asset = _prebuilt_asset(package)
+            if asset then
                 local prebuilt
-                if package:version():ge("0.8.0") then
+                if package:version():ge("0.8.3") then
+                    prebuilt = {
+                        ["android-arm64-v8a"] = "205461044b63b935a0c5e46473aff9876aef8d21c4c956bbcc47f58260e0060f",
+                        ["android-armeabi-v7a"] = "13c859fb2b9e29d84a05566448510ec4b6422953e4ef3050258b6bfccbfe92ed",
+                        ["android-x86_64"] = "9653d716ee7f2626a3acab0a55fdae802d86c31d342203170c5a61af878626b8",
+                        ["linux-arm64"] = "e88e8010097165cf42f1975cf11923009c0ca2283f3587bf596995f38066070d",
+                        ["linux-x86"] = "23fa9559053b72b0abf108f3b1ed70481cb779b10e3aae674146aa796e7186e1",
+                        ["linux-i386"] = "23fa9559053b72b0abf108f3b1ed70481cb779b10e3aae674146aa796e7186e1",
+                        ["linux-x64"] = "bc4e122b6def1020372afe4eb6f54f4eab46b02a6ee88addb86166d159be81fb",
+                        ["linux-x86_64"] = "bc4e122b6def1020372afe4eb6f54f4eab46b02a6ee88addb86166d159be81fb",
+                        ["macosx-arm64"] = "31e01ca09456d0b793abbfc23e9027cfc94cf9b780349c39a65e9852d4fa7fc9",
+                        ["wasm-wasm32"] = "a517a75853f0d2f49527d661cef68155a1fb081033058571df6c9826c0bb29a4",
+                        ["windows-x64-msvc-14.29-md"] = "2f1889f2b7f6a46c6aaae39bebe86fc9e2ad90b5e399f4871c5152e81b94dbc3",
+                        ["windows-x64-msvc-14.29-mt"] = "61b24bfbb36f7495a37da108c9dd4fe3b9d7e521e6f755a4a6dc4fe41223b256",
+                        ["windows-x64-msvc-latest-md"] = "5446e58b0083f62b6976d8f151e2a4f1ea4f3994a2983fb055d860ea500a8e83",
+                        ["windows-x64-msvc-latest-mt"] = "357c7fb204784f4d9c64f0ef311bda71db94857b8f047d66497817f1732e107d"
+                    }
+                elseif package:version():ge("0.8.0") then
                     prebuilt = {
                         ["android-arm64-v8a"] = "3a5f5ed0582da3daf6e7f4d80291c54584235a1cc9a9e54cd2f483c439856844",
                         ["android-armeabi-v7a"] = "cbd7bdd6d5a51236599decb52e8eecbd6f02cbc2f29404e5666a51cd12c6b2ac",
@@ -54,24 +108,18 @@ package("vshadersystem")
                         ["mingw-x86_64"] = "dc350f9755cdaaba1da319a414105927d152b3ef3e9417e9e8b2af2b8fd26d0c"
                     }
                 end
-                local assets = {
-                    ["linux-x64"] = "linux-x86_64",
-                    ["windows-x64"] = "windows-x64",
-                    ["mingw-x64"] = "windows-x64",
-                    ["mingw-x86_64"] = "windows-x64",
-                    ["windows-x86_64"] = "windows-x64",
-                    ["wasm-wasm32"] = "wasm-wasm32"
-                }
-                local key = package:plat() .. "-" .. package:arch()
-                local sha = prebuilt[key]
-                assert(sha, "package(vshadersystem): unsupported prebuilt target: " .. key)
-                local asset = assets[key] or key
+                local sha = prebuilt[asset]
+                assert(sha, "package(vshadersystem): unsupported prebuilt target: " .. asset)
                 package:set("urls", "https://github.com/zzxzzk115/vshadersystem/releases/download/$(version)/vshadersystem-prebuilt-$(version)-" .. asset .. ".zip")
                 package:add("versions", version, sha)
             end
             package:add("links", "vshadersystem", "spirv-tools", "tint")
-            package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = {debug = false}, system = false, public = true})
-            package:add("deps", "glslang 1.4.335+0", {configs = {debug = false}, system = false, public = true})
+            local dep_configs = {debug = false}
+            if package:is_plat("windows") and package:runtimes() then
+                dep_configs.runtimes = package:runtimes()
+            end
+            package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs, system = false, public = true})
+            package:add("deps", "glslang 1.4.335+0", {configs = dep_configs, system = false, public = true})
             package:add("deps", "xxhash", {public = true})
             package:add("links", "xxhash")
             if package:is_cross() then
@@ -86,8 +134,8 @@ package("vshadersystem")
     end)
 
     on_install(function (package)
-        local use_prebuilt = not (package:is_plat("windows") and (package:debug() or package:has_runtime("MDd", "MTd")))
-        if package:version():ge("0.7.2") and use_prebuilt then
+        local asset = _prebuilt_asset(package)
+        if package:version():ge("0.7.2") and asset then
             local version = tostring(package:version())
             local rootdir = os.dirs("vshadersystem-prebuilt-" .. version .. "-*")[1]
             if not rootdir then
@@ -99,6 +147,9 @@ package("vshadersystem")
             local configs = {
                 vshadersystem_build_examples = false,
             }
+            if package:is_plat("windows") and package:runtimes() then
+                configs.runtimes = package:runtimes()
+            end
             import("package.tools.xmake").install(package, configs)
         end
     end)
