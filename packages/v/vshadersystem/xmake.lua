@@ -23,11 +23,11 @@ package("vshadersystem")
         end
 
         local runtime = package:has_runtime("MT") and "mt" or "md"
-        local toolset = "latest"
+        local toolset = "14.29"
         local msvc = package:toolchain("msvc")
         local vs_toolset = msvc and msvc:config("vs_toolset")
-        if vs_toolset and vs_toolset:startswith("14.29") then
-            toolset = "14.29"
+        if vs_toolset and vs_toolset:startswith("14.44") then
+            toolset = "latest"
         end
         return "windows-x64-msvc-" .. toolset .. "-" .. runtime
     end
