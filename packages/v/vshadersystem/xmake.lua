@@ -6,7 +6,7 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
-    add_versions("source:v0.8.3", "62d6dc48d483dc9a91fb8d71211e5e2d63b39be9e4856dbea36bf46fe322618d")
+    add_versions("source:v0.8.3", "e7b561234f1cc7a5d8048684baaa5f4f74ece3fbd3d0b96da6c8a77d1e1c84d2")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
@@ -58,20 +58,20 @@ package("vshadersystem")
                 local prebuilt
                 if package:version():ge("0.8.3") then
                     prebuilt = {
-                        ["android-arm64-v8a"] = "205461044b63b935a0c5e46473aff9876aef8d21c4c956bbcc47f58260e0060f",
-                        ["android-armeabi-v7a"] = "13c859fb2b9e29d84a05566448510ec4b6422953e4ef3050258b6bfccbfe92ed",
-                        ["android-x86_64"] = "9653d716ee7f2626a3acab0a55fdae802d86c31d342203170c5a61af878626b8",
-                        ["linux-arm64"] = "e88e8010097165cf42f1975cf11923009c0ca2283f3587bf596995f38066070d",
-                        ["linux-x86"] = "23fa9559053b72b0abf108f3b1ed70481cb779b10e3aae674146aa796e7186e1",
-                        ["linux-i386"] = "23fa9559053b72b0abf108f3b1ed70481cb779b10e3aae674146aa796e7186e1",
-                        ["linux-x64"] = "bc4e122b6def1020372afe4eb6f54f4eab46b02a6ee88addb86166d159be81fb",
-                        ["linux-x86_64"] = "bc4e122b6def1020372afe4eb6f54f4eab46b02a6ee88addb86166d159be81fb",
-                        ["macosx-arm64"] = "31e01ca09456d0b793abbfc23e9027cfc94cf9b780349c39a65e9852d4fa7fc9",
-                        ["wasm-wasm32"] = "a517a75853f0d2f49527d661cef68155a1fb081033058571df6c9826c0bb29a4",
-                        ["windows-x64-msvc-14.29-md"] = "2f1889f2b7f6a46c6aaae39bebe86fc9e2ad90b5e399f4871c5152e81b94dbc3",
-                        ["windows-x64-msvc-14.29-mt"] = "61b24bfbb36f7495a37da108c9dd4fe3b9d7e521e6f755a4a6dc4fe41223b256",
-                        ["windows-x64-msvc-latest-md"] = "5446e58b0083f62b6976d8f151e2a4f1ea4f3994a2983fb055d860ea500a8e83",
-                        ["windows-x64-msvc-latest-mt"] = "357c7fb204784f4d9c64f0ef311bda71db94857b8f047d66497817f1732e107d"
+                        ["android-arm64-v8a"] = "d826930746d762331baef188795934b209ebc2c4d98b671da6d63898228a1d36",
+                        ["android-armeabi-v7a"] = "aeab8bc578a136f66367d3b678fba072e32c5b629bb40b856a3768b4d32a692c",
+                        ["android-x86_64"] = "b6e335c2c1b8a5f1ce7b28209fe6cfc10f5f64fadb4615afc61a8a3f5c4cffea",
+                        ["linux-arm64"] = "eeef60702509b1c5e7d671bff10b74816ee3ee47681c45749959523b3f158552",
+                        ["linux-x86"] = "39be4a1e4e9b47539f9661fa7bfe06858eb5bb3c8cc1b271edc66c600a33c5b8",
+                        ["linux-i386"] = "39be4a1e4e9b47539f9661fa7bfe06858eb5bb3c8cc1b271edc66c600a33c5b8",
+                        ["linux-x64"] = "5552a8fafd6ce3a1b3d527aa5ad4974bd1e51a812e804318fbb18d972972d918",
+                        ["linux-x86_64"] = "5552a8fafd6ce3a1b3d527aa5ad4974bd1e51a812e804318fbb18d972972d918",
+                        ["macosx-arm64"] = "f79af0fa73d29da7bcbcd37957cbd5600f61027cd6c79a0ec2dc04b1c196e71a",
+                        ["wasm-wasm32"] = "45ff1bc171fa1679cd38aad29b248975d2a6468eea0b32115e79f432ab783195",
+                        ["windows-x64-msvc-14.29-md"] = "2110834ac251140f2afeb0a75d53faf101af9de5a25c04f92091b69e75f17f58",
+                        ["windows-x64-msvc-14.29-mt"] = "3df886d261fc52b8af96926c5f2e0df303d573ee2f5c2631239cb42ab8ef2542",
+                        ["windows-x64-msvc-latest-md"] = "bc40a4e9b5847ed61ef18a7b0331cc6a7247eefa218d8cf2e224509674578d86",
+                        ["windows-x64-msvc-latest-mt"] = "0095f59566b76e8c2c33e0b7ba10d34b7ff40cb4f0feef5938c61f2ad6d4a258"
                     }
                 elseif package:version():ge("0.8.0") then
                     prebuilt = {
