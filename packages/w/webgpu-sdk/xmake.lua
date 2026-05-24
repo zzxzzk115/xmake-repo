@@ -30,7 +30,7 @@ package("webgpu-sdk")
             package:add("deps", "glfw", {public = true})
             package:addenv("PATH", "lib")
             if package:is_plat("windows") then
-                package:add("syslinks", "d3dcompiler", "ws2_32", "userenv", "ntdll", "bcrypt", "opengl32", "propsys", "runtimeobject")
+                package:add("syslinks", "d3dcompiler", "ws2_32", "userenv", "ntdll", "bcrypt", "opengl32", "propsys", "runtimeobject", "ole32", "oleaut32")
             elseif package:is_plat("linux") then
                 package:add("syslinks", "dl", "pthread", "m")
             end
