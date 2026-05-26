@@ -6,6 +6,7 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
+    add_versions("source:v0.10.0", "4b1215e439d59a7c27aa5d12dd0e7e4181e8e3fee63dd31829bc7447970b5f54")
     add_versions("source:v0.9.3", "c1f7b7cfc9c7eb3e0b8a566087ff0d9209230e09fb9eb78c2ba60f1528267a38")
     add_versions("source:v0.9.2", "7c7ed36ca82a665d478f1b89b335becf87362bb0f03ceacac4c4f2fa64216cfc")
     add_versions("source:v0.9.1", "ec426ba25083b97093a1045196f189ba453582b468484ffaacecf18ba4a4a708")
@@ -15,6 +16,7 @@ package("vshadersystem")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
+    add_versions("git:v0.10.0", "v0.10.0")
     add_versions("git:v0.9.3", "v0.9.3")
     add_versions("git:v0.9.2", "v0.9.2")
     add_versions("git:v0.9.1", "v0.9.1")
@@ -66,7 +68,24 @@ package("vshadersystem")
             local asset = _prebuilt_asset(package)
             if asset then
                 local prebuilt
-                if package:version():ge("0.9.3") then
+                if package:version():ge("0.10.0") then
+                    prebuilt = {
+                        ["android-arm64-v8a"] = "4d81432adae4a0917b9171b1d9cf96d9b4aadcabad53930fa75883d501c0c1d9",
+                        ["android-armeabi-v7a"] = "76cb46933e35ed7659ca5e9bd1e7e48665fcd8adb2fb883c3ecf8c42137fd2c1",
+                        ["android-x86_64"] = "ccd31a0def74ce94822e6eabd511f18f843ff6300d353238006e2615dfaaab9b",
+                        ["linux-arm64"] = "421fb6fc37e44682cd8c3d987b31177b443993439568730e8832c1a914ddec03",
+                        ["linux-x86"] = "2c95458ddfe7cc95504bb25a3d84b801f75656165fb80e2be0a04c63ba37b633",
+                        ["linux-i386"] = "2c95458ddfe7cc95504bb25a3d84b801f75656165fb80e2be0a04c63ba37b633",
+                        ["linux-x64"] = "b505901dfa4fd12eeaf529c91b22d241666a939f4243aa112b26c2d39b2a13c8",
+                        ["linux-x86_64"] = "b505901dfa4fd12eeaf529c91b22d241666a939f4243aa112b26c2d39b2a13c8",
+                        ["macosx-arm64"] = "7ecf4c97584ad291c915938f6bf2c44427120962d6069d33d61763dfda153e73",
+                        ["wasm-wasm32"] = "90808fa9f3b30986b28f1f6adaf6a13b1bc1979bb4efa7c2b81407896520471d",
+                        ["windows-x64-msvc-14.29-md"] = "20f1ccf0f5b6970f0ec807a7767e1c738989f8d9cd77fd7f41e7238294fb64b2",
+                        ["windows-x64-msvc-14.29-mt"] = "c567a52fd53fd911f9179e6e00053c706f14ef566c2366f0dd32aa343bba10e8",
+                        ["windows-x64-msvc-latest-md"] = "30244cd5097a72e82f6480a60709625ae987af31c2b67f319eb73534a67cd443",
+                        ["windows-x64-msvc-latest-mt"] = "a0adb01810d0827b72646a42d7f74502b53af5022c247dc8093a8e91ade90a07"
+                    }
+                elseif package:version():ge("0.9.3") then
                     prebuilt = {
                         ["android-arm64-v8a"] = "cb823ea08b119901f0379344772d21534726585b21d787a3df463eaecaab4218",
                         ["android-armeabi-v7a"] = "65db5d400c4587c04dad6db3d86e6c91bf6febc50e06cf5f7733629976c51e1c",
