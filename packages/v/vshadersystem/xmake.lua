@@ -34,12 +34,22 @@ package("vshadersystem")
             return
         end
 
-        local runtime = package:has_runtime("MT") and "mt" or "md"
-        local toolset = "14.29"
         local msvc = package:toolchain("msvc")
         local vs_toolset = msvc and msvc:config("vs_toolset")
-        if vs_toolset and vs_toolset:startswith("14.44") then
+        if not vs_toolset then
+            return
+        end
+
+        local runtime = package:has_runtime("MT") and "mt" or "md"
+        local toolset
+        if vs_toolset:startswith("14.29") then
+            toolset = "14.29"
+        elseif vs_toolset:startswith("14.44") then
             toolset = "latest"
+        else
+            -- Do not fall back to an older MSVC prebuilt. vshadersystem exposes
+            -- STL-heavy reflection data, so mixing toolsets can crash in release.
+            return
         end
         return "windows-x64-msvc-" .. toolset .. "-" .. runtime
     end
