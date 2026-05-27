@@ -6,6 +6,7 @@ package("vrendergraph")
     add_urls("https://github.com/zzxzzk115/vrendergraph/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/vrendergraph.git")
 
+    add_versions("v0.3.0", "d4204ec82a0d83fc3ac3dafb8a75956636a747c615153e9077333b047be59e96")
     add_versions("v0.2.1", "9c60f0c8e8c6fa681b3c85e1d8d53d9821712d04695447a743eaafeb1f6cf950")
     add_versions("v0.2.0", "510b67c4bd6096c377d5561334bace54a0ac72b33a8d1352e19d6c2b82694229")
 
@@ -32,7 +33,7 @@ package("vrendergraph")
                 vrendergraph::RenderGraphRegistry registry;
 
                 // Build graph
-                vrendergraph::RenderGraph rg(registry, [](FrameGraph& fg, std::string_view name) -> FrameGraphResource {
+                vrendergraph::RenderGraph rg(registry, [](FrameGraph& fg, std::string_view name, const nlohmann::json&) -> FrameGraphResource {
                     FrameGraphResource res;
                     return res;
                 });
