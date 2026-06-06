@@ -6,6 +6,7 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
+    add_versions("source:v0.11.0", "a1f71250cc0abf06bd26ded0c120ffd9db541d5ab1e70a7d838f2c095a96cca4")
     add_versions("source:v0.10.2", "12da825bbc7aaeb60831f8709f6b131197aaf45a4b65e5eed7861bc9b886993f")
     add_versions("source:v0.10.1", "cbf3dadea0179a367165c42075b5d526427c229f4e5e4958f7fe7eaa16eac291")
     add_versions("source:v0.10.0", "4b1215e439d59a7c27aa5d12dd0e7e4181e8e3fee63dd31829bc7447970b5f54")
@@ -18,6 +19,7 @@ package("vshadersystem")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
+    add_versions("git:v0.11.0", "v0.11.0")
     add_versions("git:v0.10.2", "v0.10.2")
     add_versions("git:v0.10.1", "v0.10.1")
     add_versions("git:v0.10.0", "v0.10.0")
@@ -82,7 +84,24 @@ package("vshadersystem")
             local asset = _prebuilt_asset(package)
             if asset then
                 local prebuilt
-                if package:version():ge("0.10.2") then
+                if package:version():ge("0.11.0") then
+                    prebuilt = {
+                        ["android-arm64-v8a"] = "1b24b2438206cc042dcc189266cc8ddd0f8ac67531c91e38542a91ff1e639c62",
+                        ["android-armeabi-v7a"] = "bf7fd1c3e089b793b13337185e97f6a5a253cf786b53830dd40b14a9646b6212",
+                        ["android-x86_64"] = "3685cbd6abde385b2381075e71224ba5093fd0b0613f804e0a6c832795faa362",
+                        ["linux-arm64"] = "d5dc88a3a5413f391d3da9e798972d11ee65eff4fc179ce9c6918509c06e771e",
+                        ["linux-x86"] = "125a6a7584668a9a4b7506c9efaa1df4dca605e396be2d95e30a8d09f0781c83",
+                        ["linux-i386"] = "125a6a7584668a9a4b7506c9efaa1df4dca605e396be2d95e30a8d09f0781c83",
+                        ["linux-x64"] = "7c0ce671ae90ef2d480e931bde765be46be58bcd08d91648242fcd3998df4523",
+                        ["linux-x86_64"] = "7c0ce671ae90ef2d480e931bde765be46be58bcd08d91648242fcd3998df4523",
+                        ["macosx-arm64"] = "66688711f4f7039c5d7eed91525c1ecce2278d504fd5fd22c59e66e393ff94f0",
+                        ["wasm-wasm32"] = "0b76331071ea462630101223a27a0f5f88562e19e8f36b14c82756e5bb444ea9",
+                        ["windows-x64-msvc-14.29-md"] = "101e40101673bcb9a95a1b26599b09d9c46a2e3a495e2d9634b9d364ecfda963",
+                        ["windows-x64-msvc-14.29-mt"] = "c1bce8c4867cc5b9055c25b11482e6737e180644f8cdaf4555c333c3ff5ed3fb",
+                        ["windows-x64-msvc-latest-md"] = "0b3f80561f4ea046510f2f2b6e556c0c441e2a31a9be9ab19ac6e95bd61cb6ac",
+                        ["windows-x64-msvc-latest-mt"] = "7490224218282f8f757f5f03d7a27d0020711cf4d8335a51f59d2358bd98c747"
+                    }
+                elseif package:version():ge("0.10.2") then
                     prebuilt = {
                         ["android-arm64-v8a"] = "a975ad5eaa9db2ea8bc6f102bd8292082611d6be82cca52333b643166a6adc22",
                         ["android-armeabi-v7a"] = "c6371c8e7e053ba9fda7b646c5408a4d3dd75c1141bd838f1015ea54a972cd9f",
@@ -323,6 +342,8 @@ package("vshadersystem")
         if package:is_cross() or package:is_binary() then
             return
         end
+        -- v0.11.0+ requires an explicit shader id on the BuildRequest.
+        local id_line = package:version():ge("0.11.0") and [[req.id = "test/probe";]] or ""
         assert(package:check_cxxsnippets({test = [[
                 #include <vshadersystem/system.hpp>
                 #include <iostream>
@@ -352,6 +373,7 @@ package("vshadersystem")
 
                     req.source.virtualPath = "test.frag.vshader";
                     req.source.sourceText  = source;
+]] .. id_line .. [[
 
                     req.options.stage = ShaderStage::eFrag;
 
