@@ -6,10 +6,7 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
-    add_versions("source:v0.11.0", "a1f71250cc0abf06bd26ded0c120ffd9db541d5ab1e70a7d838f2c095a96cca4")
-    add_versions("source:v0.10.2", "12da825bbc7aaeb60831f8709f6b131197aaf45a4b65e5eed7861bc9b886993f")
-    add_versions("source:v0.10.1", "cbf3dadea0179a367165c42075b5d526427c229f4e5e4958f7fe7eaa16eac291")
-    add_versions("source:v0.10.0", "4b1215e439d59a7c27aa5d12dd0e7e4181e8e3fee63dd31829bc7447970b5f54")
+    add_versions("source:v0.11.1", "608f847fc4e5d0cef4369c94abb78139e7674d6e595c93709a96fe8702e3cb1f")
     add_versions("source:v0.9.3", "c1f7b7cfc9c7eb3e0b8a566087ff0d9209230e09fb9eb78c2ba60f1528267a38")
     add_versions("source:v0.9.2", "7c7ed36ca82a665d478f1b89b335becf87362bb0f03ceacac4c4f2fa64216cfc")
     add_versions("source:v0.9.1", "ec426ba25083b97093a1045196f189ba453582b468484ffaacecf18ba4a4a708")
@@ -19,10 +16,7 @@ package("vshadersystem")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
-    add_versions("git:v0.11.0", "v0.11.0")
-    add_versions("git:v0.10.2", "v0.10.2")
-    add_versions("git:v0.10.1", "v0.10.1")
-    add_versions("git:v0.10.0", "v0.10.0")
+    add_versions("git:v0.11.1", "v0.11.1")
     add_versions("git:v0.9.3", "v0.9.3")
     add_versions("git:v0.9.2", "v0.9.2")
     add_versions("git:v0.9.1", "v0.9.1")
@@ -84,73 +78,22 @@ package("vshadersystem")
             local asset = _prebuilt_asset(package)
             if asset then
                 local prebuilt
-                if package:version():ge("0.11.0") then
+                if package:version():ge("0.11.1") then
                     prebuilt = {
-                        ["android-arm64-v8a"] = "1b24b2438206cc042dcc189266cc8ddd0f8ac67531c91e38542a91ff1e639c62",
-                        ["android-armeabi-v7a"] = "bf7fd1c3e089b793b13337185e97f6a5a253cf786b53830dd40b14a9646b6212",
-                        ["android-x86_64"] = "3685cbd6abde385b2381075e71224ba5093fd0b0613f804e0a6c832795faa362",
-                        ["linux-arm64"] = "d5dc88a3a5413f391d3da9e798972d11ee65eff4fc179ce9c6918509c06e771e",
-                        ["linux-x86"] = "125a6a7584668a9a4b7506c9efaa1df4dca605e396be2d95e30a8d09f0781c83",
-                        ["linux-i386"] = "125a6a7584668a9a4b7506c9efaa1df4dca605e396be2d95e30a8d09f0781c83",
-                        ["linux-x64"] = "7c0ce671ae90ef2d480e931bde765be46be58bcd08d91648242fcd3998df4523",
-                        ["linux-x86_64"] = "7c0ce671ae90ef2d480e931bde765be46be58bcd08d91648242fcd3998df4523",
-                        ["macosx-arm64"] = "66688711f4f7039c5d7eed91525c1ecce2278d504fd5fd22c59e66e393ff94f0",
-                        ["wasm-wasm32"] = "0b76331071ea462630101223a27a0f5f88562e19e8f36b14c82756e5bb444ea9",
-                        ["windows-x64-msvc-14.29-md"] = "101e40101673bcb9a95a1b26599b09d9c46a2e3a495e2d9634b9d364ecfda963",
-                        ["windows-x64-msvc-14.29-mt"] = "c1bce8c4867cc5b9055c25b11482e6737e180644f8cdaf4555c333c3ff5ed3fb",
-                        ["windows-x64-msvc-latest-md"] = "0b3f80561f4ea046510f2f2b6e556c0c441e2a31a9be9ab19ac6e95bd61cb6ac",
-                        ["windows-x64-msvc-latest-mt"] = "7490224218282f8f757f5f03d7a27d0020711cf4d8335a51f59d2358bd98c747"
-                    }
-                elseif package:version():ge("0.10.2") then
-                    prebuilt = {
-                        ["android-arm64-v8a"] = "a975ad5eaa9db2ea8bc6f102bd8292082611d6be82cca52333b643166a6adc22",
-                        ["android-armeabi-v7a"] = "c6371c8e7e053ba9fda7b646c5408a4d3dd75c1141bd838f1015ea54a972cd9f",
-                        ["android-x86_64"] = "b41e93528465eb5ec13a7ef1793cb5573f4db82443415abb7ae33a3f5f765715",
-                        ["linux-arm64"] = "5caec1fc7c6a829fae148dd1ea5df2cb2e5d78ab47eef78b452b6e37dcd39b7b",
-                        ["linux-x86"] = "463140ffa53fdb501de476b0e1fe63f8e4af0a5e720ffae50f0422cce5aebd15",
-                        ["linux-i386"] = "463140ffa53fdb501de476b0e1fe63f8e4af0a5e720ffae50f0422cce5aebd15",
-                        ["linux-x64"] = "149280ef5e775756aa7afc9d164832e398c7d996dfc6ef4bda4a5effca358c86",
-                        ["linux-x86_64"] = "149280ef5e775756aa7afc9d164832e398c7d996dfc6ef4bda4a5effca358c86",
-                        ["macosx-arm64"] = "061e7c484368009d97e6ead7806ae2151640ab1df739f031aa8673d605ff9c0b",
-                        ["wasm-wasm32"] = "d4867dac0040bad41703498013050648a6134e27882b453d4b18da17cdf5e97e",
-                        ["windows-x64-msvc-14.29-md"] = "c3a2eeb7b6c2fb5c3f3ab256d56752ecccd879820036e03862d0a8a445ba4855",
-                        ["windows-x64-msvc-14.29-mt"] = "8518f1130623d6e550a963290336a6f3815c5488b293422593a612e26219836d",
-                        ["windows-x64-msvc-latest-md"] = "38f12d179d87c9c2b0dec0a1882faa65d02fd618e17409807fbde772744e0e3c",
-                        ["windows-x64-msvc-latest-mt"] = "1c23c12e648b045e0baeb47180979f57daa9bb036ef67aa653e0036dfbba68c1"
-                    }
-                elseif package:version():ge("0.10.1") then
-                    prebuilt = {
-                        ["android-arm64-v8a"] = "32ce934685c1f973774130af69564241e3fd346bc8a01bb4dbe1f466d8254fa2",
-                        ["android-armeabi-v7a"] = "df93b1af2a03cfc51ada44762d5967c5f2a858350074fc3f5e7a60c599bddce7",
-                        ["android-x86_64"] = "f07b35f2a2f41dd3d10ad5010390705c80a402ba996326454bd74a207d4129b5",
-                        ["linux-arm64"] = "55c5b8b4c4d8ede360b673bfdcc724d9c1bd9fc54d3c6b2a33e7a57f47951c2b",
-                        ["linux-x86"] = "7f36d9a08333d9086cec640b86615d9361a3db8fe2631f2a10e874b38f1c90c5",
-                        ["linux-i386"] = "7f36d9a08333d9086cec640b86615d9361a3db8fe2631f2a10e874b38f1c90c5",
-                        ["linux-x64"] = "11b06c4b6ece454a540e35b995d0d94264111e86cae007ac1f1ad85aea948195",
-                        ["linux-x86_64"] = "11b06c4b6ece454a540e35b995d0d94264111e86cae007ac1f1ad85aea948195",
-                        ["macosx-arm64"] = "e881451cf296f2c3633a2f3e0f32966e90f7ef06f79dcf305d51fce7258b3657",
-                        ["wasm-wasm32"] = "e36972b794d44a99fd01e9ca59c4a0144212344fa2941b4e8d08aaa1b1c3930a",
-                        ["windows-x64-msvc-14.29-md"] = "5afcff60d74fd17726097e63a8326b1688c1b21c344bbc1efceb7f7bef5bb178",
-                        ["windows-x64-msvc-14.29-mt"] = "44f405a8bef1088a3e8b7667709c3e3446202783d72e3015c202af6617dcdabc",
-                        ["windows-x64-msvc-latest-md"] = "2667275aa4fccbff81d5761265825de2494d99caefcfbc34e7cef3e529f39683",
-                        ["windows-x64-msvc-latest-mt"] = "6444419c6c45cb9207b25fa2b291b9645cea9d13b826e0fbe2410c9356cf6c86"
-                    }
-                elseif package:version():ge("0.10.0") then
-                    prebuilt = {
-                        ["android-arm64-v8a"] = "4d81432adae4a0917b9171b1d9cf96d9b4aadcabad53930fa75883d501c0c1d9",
-                        ["android-armeabi-v7a"] = "76cb46933e35ed7659ca5e9bd1e7e48665fcd8adb2fb883c3ecf8c42137fd2c1",
-                        ["android-x86_64"] = "ccd31a0def74ce94822e6eabd511f18f843ff6300d353238006e2615dfaaab9b",
-                        ["linux-arm64"] = "421fb6fc37e44682cd8c3d987b31177b443993439568730e8832c1a914ddec03",
-                        ["linux-x86"] = "2c95458ddfe7cc95504bb25a3d84b801f75656165fb80e2be0a04c63ba37b633",
-                        ["linux-i386"] = "2c95458ddfe7cc95504bb25a3d84b801f75656165fb80e2be0a04c63ba37b633",
-                        ["linux-x64"] = "b505901dfa4fd12eeaf529c91b22d241666a939f4243aa112b26c2d39b2a13c8",
-                        ["linux-x86_64"] = "b505901dfa4fd12eeaf529c91b22d241666a939f4243aa112b26c2d39b2a13c8",
-                        ["macosx-arm64"] = "7ecf4c97584ad291c915938f6bf2c44427120962d6069d33d61763dfda153e73",
-                        ["wasm-wasm32"] = "90808fa9f3b30986b28f1f6adaf6a13b1bc1979bb4efa7c2b81407896520471d",
-                        ["windows-x64-msvc-14.29-md"] = "20f1ccf0f5b6970f0ec807a7767e1c738989f8d9cd77fd7f41e7238294fb64b2",
-                        ["windows-x64-msvc-14.29-mt"] = "c567a52fd53fd911f9179e6e00053c706f14ef566c2366f0dd32aa343bba10e8",
-                        ["windows-x64-msvc-latest-md"] = "30244cd5097a72e82f6480a60709625ae987af31c2b67f319eb73534a67cd443",
-                        ["windows-x64-msvc-latest-mt"] = "a0adb01810d0827b72646a42d7f74502b53af5022c247dc8093a8e91ade90a07"
+                        ["android-arm64-v8a"] = "58bfa1cbdb9d07b23fe8479d36005c86731bf726fe4481263fd4d315a8215c66",
+                        ["android-armeabi-v7a"] = "b5433888793e1f173e71ed1a5a1e4b5f669a69567c198f216fe5c396f334fec6",
+                        ["android-x86_64"] = "23863c6ff5d1932508c60a678cf0d8f8241fcdfc9f0e104170f14ac836d70e42",
+                        ["linux-arm64"] = "c0769c97ca5031d265585aafe2ea381c6dd476ceb455fbf851b7e5f38a743a7e",
+                        ["linux-x86"] = "f0ed1ed5ddba3cc163e7155f5e4e275222cf9d494f0d372a205ff7131c8801cd",
+                        ["linux-i386"] = "f0ed1ed5ddba3cc163e7155f5e4e275222cf9d494f0d372a205ff7131c8801cd",
+                        ["linux-x64"] = "deb42163a79d59c8e2d6ec4b0e0a225bd8bd02a18454074471fbb4a3fe3f191e",
+                        ["linux-x86_64"] = "deb42163a79d59c8e2d6ec4b0e0a225bd8bd02a18454074471fbb4a3fe3f191e",
+                        ["macosx-arm64"] = "10c4058fa643ceac16580cb0f873ac61e473da6f07c2078c695c5599bc936eef",
+                        ["wasm-wasm32"] = "43f146f54ee03efd464f42b30748ef270eee3f67819026c53bbe9f318126614c",
+                        ["windows-x64-msvc-14.29-md"] = "1f16770620f87d4170c5daf96529fbd912cc671b454c11decd8bc96fc9334223",
+                        ["windows-x64-msvc-14.29-mt"] = "5f730358e23aaf940bdf0124ca19a0a8f551a6150ecdd77e5e7391308c4e0b7a",
+                        ["windows-x64-msvc-latest-md"] = "9de027aa90f67150e25978cb79fcc4812160b2cdc479c566cdbc3ea9e6d722d5",
+                        ["windows-x64-msvc-latest-mt"] = "6d1b1574c8a68e7642d4f10097c96f9d3187d93ce12fd8173ed026cc6ae7742b"
                     }
                 elseif package:version():ge("0.9.3") then
                     prebuilt = {
@@ -342,8 +285,8 @@ package("vshadersystem")
         if package:is_cross() or package:is_binary() then
             return
         end
-        -- v0.11.0+ requires an explicit shader id on the BuildRequest.
-        local id_line = package:version():ge("0.11.0") and [[req.id = "test/probe";]] or ""
+        -- v0.11.1+ requires an explicit shader id on the BuildRequest.
+        local id_line = package:version():ge("0.11.1") and [[req.id = "test/probe";]] or ""
         assert(package:check_cxxsnippets({test = [[
                 #include <vshadersystem/system.hpp>
                 #include <iostream>
