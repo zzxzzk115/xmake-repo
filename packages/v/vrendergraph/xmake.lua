@@ -6,6 +6,7 @@ package("vrendergraph")
     add_urls("https://github.com/zzxzzk115/vrendergraph/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/vrendergraph.git")
 
+    add_versions("v0.4.1", "55442124fb72e165478391598b2712e2c03af77c1947e8695132595c0cec4f4a")
     add_versions("v0.4.0", "2af72b69666a2a81f8713b0ca86e40b49027d629e09001ba7e87f2fd0e8534e5")
     add_versions("v0.3.0", "d4204ec82a0d83fc3ac3dafb8a75956636a747c615153e9077333b047be59e96")
     add_versions("v0.2.1", "9c60f0c8e8c6fa681b3c85e1d8d53d9821712d04695447a743eaafeb1f6cf950")
