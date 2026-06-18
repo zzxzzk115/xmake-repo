@@ -6,6 +6,7 @@ package("vshadersystem")
     add_urls("https://github.com/zzxzzk115/vshadersystem/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vshadersystem.git", {alias = "git"})
 
+    add_versions("source:v0.11.2", "16250dd1adfa8a44e4d6d669fb0492692f7eda8f678540fc964ac9f37c9b6d0a")
     add_versions("source:v0.11.1", "608f847fc4e5d0cef4369c94abb78139e7674d6e595c93709a96fe8702e3cb1f")
     add_versions("source:v0.9.3", "c1f7b7cfc9c7eb3e0b8a566087ff0d9209230e09fb9eb78c2ba60f1528267a38")
     add_versions("source:v0.9.2", "7c7ed36ca82a665d478f1b89b335becf87362bb0f03ceacac4c4f2fa64216cfc")
@@ -16,6 +17,7 @@ package("vshadersystem")
     add_versions("source:v0.8.2", "b449a24d364a5c4b15b8cbb53144abf14723bb863b2cd330b99273d26cddb4db")
     add_versions("source:v0.7.2", "a6e268d2cbc770e6ed8ffc8c554a9898db54ff7e2b045ee0af595286bce925fb")
     add_versions("source:v0.6.2", "73a381c343f856030574cc787f7e30d4d6e020db26cef40413ba7f6fd7170560")
+    add_versions("git:v0.11.2", "v0.11.2")
     add_versions("git:v0.11.1", "v0.11.1")
     add_versions("git:v0.9.3", "v0.9.3")
     add_versions("git:v0.9.2", "v0.9.2")
@@ -25,6 +27,37 @@ package("vshadersystem")
     add_versions("git:v0.8.3", "v0.8.3")
     add_versions("git:v0.8.2", "v0.8.2")
     add_versions("git:v0.7.2", "v0.7.2")
+
+    -- Lowest full MSVC toolset version the "latest" prebuilt is link-compatible with.
+    -- The "latest" release artifact is built on the windows-latest runner with an
+    -- *unpinned* MSVC (ilammy/msvc-dev-cmd picks the newest installed toolset), so its
+    -- objects reference whatever __std_* vectorized STL helpers that toolset emits.
+    -- Those symbols are additive: a consumer can only link it when its own STL static
+    -- lib (libcpmt.lib / msvcprt.lib) is >= the producer toolset. Matching on the
+    -- "14.44" major.minor prefix alone is unsafe because a 14.44 GA install (e.g.
+    -- 14.44.35207, _MSVC_STL_UPDATE 202503L) lacks symbols like __std_replace_copy_2
+    -- that the newer producer toolset relies on. Keep this in sync with the toolset
+    -- the latest prebuilt was actually compiled with (see release_prebuilt.yaml CI log).
+    local LATEST_PREBUILT_FLOOR = "14.51.36231"
+
+    -- numeric ">=" over dotted version strings ("14.44.35207" vs "14.51.36231")
+    local function _toolset_ge(v, floor)
+        local function parse(s)
+            local t = {}
+            for n in s:gmatch("%d+") do
+                t[#t + 1] = tonumber(n)
+            end
+            return t
+        end
+        local a, b = parse(v), parse(floor)
+        for i = 1, math.max(#a, #b) do
+            local x, y = a[i] or 0, b[i] or 0
+            if x ~= y then
+                return x > y
+            end
+        end
+        return true
+    end
 
     local function _windows_prebuilt_asset(package)
         if not package:is_plat("windows") or not package:is_arch("x64", "x86_64") then
@@ -43,12 +76,20 @@ package("vshadersystem")
         local runtime = package:has_runtime("MT") and "mt" or "md"
         local toolset
         if vs_toolset:startswith("14.29") then
+            -- pinned 14.29 prebuilt (CI builds this with toolset 14.29 explicitly)
             toolset = "14.29"
         elseif vs_toolset:startswith("14.44") then
+            -- pinned 14.44 prebuilt (CI builds this with toolset 14.44, i.e. the
+            -- 14.44.35207 GA STL). All 14.44.x patches share the same STL symbol
+            -- floor, so a prefix match is safe here.
+            toolset = "14.44"
+        elseif _toolset_ge(vs_toolset, LATEST_PREBUILT_FLOOR) then
             toolset = "latest"
         else
-            -- Do not fall back to an older MSVC prebuilt. vshadersystem exposes
-            -- STL-heavy reflection data, so mixing toolsets can crash in release.
+            -- Toolset older than the "latest" prebuilt's: linking it would fail with
+            -- unresolved __std_* externs. Do not fall back to an older/mismatched MSVC
+            -- prebuilt either -- vshadersystem exposes STL-heavy reflection data, so
+            -- mixing toolsets can crash in release. Fall through to a source build.
             return
         end
         return "windows-x64-msvc-" .. toolset .. "-" .. runtime
@@ -78,7 +119,26 @@ package("vshadersystem")
             local asset = _prebuilt_asset(package)
             if asset then
                 local prebuilt
-                if package:version():ge("0.11.1") then
+                if package:version():ge("0.11.2") then
+                    prebuilt = {
+                        ["android-arm64-v8a"] = "6afad4928fb3e4dcdabb0726755d007b71d248e1f903f5eb8241874fa0a723dd",
+                        ["android-armeabi-v7a"] = "8a9df4aa9ea0e65d5277fd828c18cada57fc9040cc68ce6051905ff543f488b6",
+                        ["android-x86_64"] = "cc81da23eb4d468d189fdfdbb3ec6c52177f5e90295de467e49cfe8daa0bb6b9",
+                        ["linux-arm64"] = "eaee1442533cf940789f714c081f101b5d88bd3bcff387ec2008e40fb10c49f5",
+                        ["linux-x86"] = "4717e247c3452af98d61424da915849c0a8ecab4fbb2f110178629729d520e0b",
+                        ["linux-i386"] = "4717e247c3452af98d61424da915849c0a8ecab4fbb2f110178629729d520e0b",
+                        ["linux-x64"] = "f91e039046bae9c7817ba817854bb7c63f67c5fe1f3b968d7785aa509db422d8",
+                        ["linux-x86_64"] = "f91e039046bae9c7817ba817854bb7c63f67c5fe1f3b968d7785aa509db422d8",
+                        ["macosx-arm64"] = "77e25e807583595900dde062d90c771197350cc3b28e27c287c0320787dc105b",
+                        ["wasm-wasm32"] = "02dc6435ebc390199c861a40db888f9a6ccbf11874f0bdd72ad8beaf172ed0cf",
+                        ["windows-x64-msvc-14.29-md"] = "ec0c83abbdeaa50221f0f94d1c2e1cad96340bcc8ac23261c79a89fc58d542fe",
+                        ["windows-x64-msvc-14.29-mt"] = "373ea64303769674bf086a638e3db925cbbf8783ca8699106739a5a8e5ef4949",
+                        ["windows-x64-msvc-14.44-md"] = "52137e168f74c5b547f663eb45883a89fcaa3685af6ffbaf3a20c7dd0091b474",
+                        ["windows-x64-msvc-14.44-mt"] = "3ba0d6d6735b7564569e13d0a41797d4823cba43403317bcb92cd67e4d546535",
+                        ["windows-x64-msvc-latest-md"] = "3162121a8aec0ee37f53d2fdf3b4f38573d7a54faae1adc22917a921a53eee4b",
+                        ["windows-x64-msvc-latest-mt"] = "befc499454edc7d7caa211d1ea36c4611f3b480b39b8e659aa8286c8ee9f9245"
+                    }
+                elseif package:version():ge("0.11.1") then
                     prebuilt = {
                         ["android-arm64-v8a"] = "58bfa1cbdb9d07b23fe8479d36005c86731bf726fe4481263fd4d315a8215c66",
                         ["android-armeabi-v7a"] = "b5433888793e1f173e71ed1a5a1e4b5f669a69567c198f216fe5c396f334fec6",
@@ -92,6 +152,8 @@ package("vshadersystem")
                         ["wasm-wasm32"] = "43f146f54ee03efd464f42b30748ef270eee3f67819026c53bbe9f318126614c",
                         ["windows-x64-msvc-14.29-md"] = "1f16770620f87d4170c5daf96529fbd912cc671b454c11decd8bc96fc9334223",
                         ["windows-x64-msvc-14.29-mt"] = "5f730358e23aaf940bdf0124ca19a0a8f551a6150ecdd77e5e7391308c4e0b7a",
+                        ["windows-x64-msvc-14.44-md"] = "d7539e70424ac1a46eff4e48c18e623f6c6e67d165b1122c6d77c13a6b4dd28c",
+                        ["windows-x64-msvc-14.44-mt"] = "10247d7fc1d03a80ef79e3bc56726932e68c6bd62280ff869ee5e6e6048b8cc8",
                         ["windows-x64-msvc-latest-md"] = "9de027aa90f67150e25978cb79fcc4812160b2cdc479c566cdbc3ea9e6d722d5",
                         ["windows-x64-msvc-latest-mt"] = "6d1b1574c8a68e7642d4f10097c96f9d3187d93ce12fd8173ed026cc6ae7742b"
                     }
@@ -237,7 +299,15 @@ package("vshadersystem")
                 package:set("urls", "https://github.com/zzxzzk115/vshadersystem/releases/download/$(version)/vshadersystem-prebuilt-$(version)-" .. asset .. ".zip")
                 package:add("versions", version, sha)
             end
-            package:add("links", "vshadersystem", "spirv-tools", "tint")
+            if package:version():ge("0.11.2") then
+                -- v0.11.2 replaced Tint (+spirv-tools) with naga for SPIR-V->WGSL. naga is a host-only
+                -- cook dep, statically linked into the vshaderc tool and referenced only by wgsl.cpp,
+                -- which the runtime/Vulkan consumer (e.g. libvultra) never pulls (it uses compile/reflect,
+                -- not spirv_to_wgsl). So consumers link only vshadersystem here.
+                package:add("links", "vshadersystem")
+            else
+                package:add("links", "vshadersystem", "spirv-tools", "tint")
+            end
             local dep_configs = {debug = false}
             if package:is_plat("windows") and package:runtimes() then
                 dep_configs.runtimes = package:runtimes()
