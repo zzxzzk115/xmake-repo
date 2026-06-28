@@ -7,7 +7,6 @@ package("vbase")
              "https://github.com/zzxzzk115/vbase.git")
 
     add_versions("v0.2.1", "78a0011512541069c25d36169af9ea28dcfb1fbc607c0b39c10262271796c064")
-    add_versions("v0.2.0", "c80998fb7ac1f274533ff04c1e43ee26d08fae2e2c4168c5672815571a5506fd")
 
     -- vbase/config.hpp #errors unless these are defined by the build system. The library's target
     -- sets them as public defines for in-workspace builds; a package must re-export them so
