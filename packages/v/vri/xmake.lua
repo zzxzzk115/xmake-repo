@@ -6,6 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
+    add_versions("v0.1.1", "449a2a2fcbb95e5846a366b3c4dd3b9a0df26222739a36b697e45b25c8d48b4f")
     add_versions("v0.1.0", "6aba9d064743ae50840fc04b13474aaad568e196330ef0f11d27ad335fb60fec")
 
     -- Backend selection mirrors VRI's own options. Vulkan is the reference backend (default on);
