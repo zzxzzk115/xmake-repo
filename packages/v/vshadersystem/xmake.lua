@@ -195,7 +195,13 @@ package("vshadersystem")
             if not package:is_cross() and not package:is_plat("android", "wasm") then
                 os.vrun("vshaderc --help")
             end
-            assert(package:has_cxxincludes("vshadersystem/vsh_format.hpp", {configs = {languages = "c++23"}}))
+            -- The ~host cook tool is a binary package (vshaderc only, no consumer headers); only the
+            -- library packages ship vsh_format.hpp. Asserting it on the binary host tool wrongly fails
+            -- cross builds (e.g. WASM pulling vshadersystem~host), so skip the header check there --
+            -- mirroring the v0.x branch below, which early-returns for is_cross()/is_binary().
+            if not package:is_binary() then
+                assert(package:has_cxxincludes("vshadersystem/vsh_format.hpp", {configs = {languages = "c++23"}}))
+            end
             return
         end
         if not package:is_cross() then
