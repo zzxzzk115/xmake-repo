@@ -14,6 +14,12 @@ package("vasset")
     -- consumer that only loads cooked assets.
     add_configs("importers", {description = "Build the importer targets + vasset-cli.", default = true, type = "boolean"})
 
+    -- Off by default: most consumers only load cooked assets and reach the cook tool via PATH. Turn
+    -- on to LINK the importer side (vasset-import + assimp/ozz/vshadersystem) into the consumer, for
+    -- in-process import/cook/pack via the vasset C ABI -- e.g. an editor or a runtime that supports
+    -- dynamic import. Heavier (pulls assimp/ozz), hence opt-in.
+    add_configs("link_importers", {description = "Link the importer libs for in-process import/cook/pack.", default = false, type = "boolean"})
+
     -- Runtime deps (the vasset runtime target's public packages) -- propagated to consumers.
     add_deps("vfilesystem", {public = true})
     add_deps("glm", "stb", "xxhash", "meshoptimizer", "tinyexr", "zstd", {public = true})
@@ -27,18 +33,26 @@ package("vasset")
             package:add("deps", "opencl", {public = true})
         end
 
-        -- Importer/CLI build deps (private: needed to build vasset-cli, not to link the runtime).
+        -- Importer/CLI build deps. Private by default (needed to build vasset-cli, not to link the
+        -- runtime); made public when link_importers, so the importer lib resolves assimp/ozz/vsh.
         local importers = package:config("importers")
             and not package:is_plat("android")
             and (not package:is_plat("wasm"))
+        local link_importers = importers and package:config("link_importers")
         if importers then
-            package:add("deps", "assimp", {configs = {shared = false, draco = package:is_plat("windows")}, private = true})
-            package:add("deps", "ozz-animation", {configs = {tools = false, fbx = false, gltf = false, data = false}, private = true})
-            package:add("deps", "vshadersystem v0.11.3", {private = true})
+            local imp_private = not link_importers
+            package:add("deps", "assimp", {configs = {shared = false, draco = package:is_plat("windows")}, private = imp_private})
+            package:add("deps", "ozz-animation", {configs = {tools = false, fbx = false, gltf = false, data = false}, private = imp_private})
+            package:add("deps", "vshadersystem v0.11.3", {private = imp_private})
         end
 
-        -- Runtime link set: the runtime lib + its vendored dds-ktx. The importer libs and the
-        -- vasset-cli binary are not link targets for consumers (the CLI is reached via PATH).
+        -- Link set. With link_importers, expose the importer lib + its vendored libs (GaussForge/spz)
+        -- so consumers can call vasset's import/cook/pack C ABI in-process (vasset-import is built
+        -- separately from the runtime vasset lib). The importer lib comes first -- it depends on the
+        -- runtime lib. Without link_importers, only the runtime lib + dds-ktx (CLI reached via PATH).
+        if link_importers then
+            package:add("links", "vasset-import", "GaussForge", "spz")
+        end
         package:add("links", "vasset", "dds-ktx")
 
         -- GLM configuration the vasset headers are compiled against.
