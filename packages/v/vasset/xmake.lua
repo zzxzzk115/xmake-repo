@@ -6,6 +6,7 @@ package("vasset")
     add_urls("https://github.com/zzxzzk115/vasset/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/vasset.git")
 
+    add_versions("v0.4.1", "b5b6635e4decb5e49f6b14eb5c80e507b9b27df45e606351bbb4d68e4942724d")
     add_versions("v0.4.0", "d02d14bdbe1835a64c019eaed18bbb575d7ba9c59863083526b7ff12e358dfe9")
 
     -- The runtime lib (loadMesh/loadTexture/VPK) is what most consumers link. The importer side
