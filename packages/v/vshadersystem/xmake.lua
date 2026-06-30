@@ -197,6 +197,24 @@ package("vshadersystem")
             end
             import("package.tools.xmake").install(package, configs)
         end
+
+        -- With vshaderc_lib, bundle the Slang runtime (DLLs/.dylib/.so + standard modules) into THIS
+        -- package's bin, so it ships inside the consumer-visible vshadersystem package. slang-prebuilt
+        -- is otherwise a package-of-a-package and invisible to consumers, so they could neither find
+        -- nor deploy the Slang shared libs the linked vshaderc-lib needs at runtime. Consumers then
+        -- copy this bin next to their exe (+ @rpath/$ORIGIN) -- see the vshadersystem examples.
+        if package:config("vshaderc_lib") and package:version():ge("1.0.0") then
+            local slang = package:dep("slang-prebuilt")
+            if slang and slang:installdir() then
+                local sdir   = slang:installdir()
+                local bindir = package:installdir("bin")
+                os.mkdir(bindir)
+                for _, f in ipairs(os.files(path.join(sdir, "bin", "*"))) do os.trycp(f, bindir) end
+                for _, d in ipairs(os.dirs(path.join(sdir, "bin", "*"))) do os.trycp(d, bindir) end
+                for _, so in ipairs(os.files(path.join(sdir, "lib", "*.so*"))) do os.trycp(so, bindir) end
+                for _, dy in ipairs(os.files(path.join(sdir, "lib", "*.dylib"))) do os.trycp(dy, bindir) end
+            end
+        end
     end)
 
     on_test(function (package)
