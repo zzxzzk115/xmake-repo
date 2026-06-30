@@ -13,6 +13,11 @@ package("vshadersystem")
     add_versions("git:v1.0.0", "v1.0.0")
     add_versions("git:v0.11.3", "v0.11.3")
 
+    -- Expose vshaderc-lib (the offline Slang compile library behind the vshaderc CLI) so consumers
+    -- can compile shaders in-process instead of shelling out -- e.g. an asset importer. v1.0.0+ only
+    -- (the build API the CLI uses); pulls the Slang runtime, hence opt-in.
+    add_configs("vshaderc_lib", {description = "Link vshaderc-lib for in-process Slang shader compilation.", default = false, type = "boolean"})
+
     -- Lowest full MSVC toolset version the "latest" prebuilt is link-compatible with.
     -- The "latest" release artifact is built on the windows-latest runner with an
     -- *unpinned* MSVC (ilammy/msvc-dev-cmd picks the newest installed toolset), so its
@@ -151,6 +156,13 @@ package("vshadersystem")
         -- naga (SPIR-V->WGSL) is a host-only cook dep statically linked into the vshaderc tool
         -- and referenced only by wgsl.cpp, which the runtime/Vulkan consumer (e.g. libvultra)
         -- never pulls. So consumers link only vshadersystem here.
+        -- Offline Slang compile lib (vshaderc-lib) for in-process shader compilation. Listed before
+        -- vshadersystem (it depends on the runtime lib). The lib + vshaderc/ headers are already
+        -- installed; this just links them + the Slang SDK. v1.0.0+ only.
+        if package:config("vshaderc_lib") and package:version():ge("1.0.0") then
+            package:add("links", "vshaderc-lib")
+            package:add("deps", "slang-prebuilt 2026.11", {public = true})
+        end
         package:add("links", "vshadersystem")
         local dep_configs = {debug = false}
         if package:is_plat("windows") and package:runtimes() then
