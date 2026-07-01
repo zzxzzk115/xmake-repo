@@ -32,7 +32,15 @@ package("vri")
         end
         if package:config("gl") then
             package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs})
-            if not package:is_plat("wasm") then
+            if package:is_plat("wasm") then
+                -- The GL backend targets WebGL2 (GLES3) via Emscripten's GLFW3 + FULL_ES3 ports.
+                -- FULL_ES3 provides the ES3 entry points the backend calls (glMapBufferRange,
+                -- glTexStorage2D/3D, glGenSamplers, ...); without these link flags a consumer's
+                -- final link fails with undefined GL symbols. VRI's own target sets them publicly,
+                -- but target-public flags don't reach package consumers, so export them here.
+                package:add("ldflags", "-sUSE_GLFW=3", "-sFULL_ES3",
+                            "-sMIN_WEBGL_VERSION=2", "-sMAX_WEBGL_VERSION=2")
+            else
                 local glad_configs = {profile = "core", api = "gl=4.6"}
                 if dep_configs.runtimes then glad_configs.runtimes = dep_configs.runtimes end
                 package:add("deps", "glad", {configs = glad_configs})
