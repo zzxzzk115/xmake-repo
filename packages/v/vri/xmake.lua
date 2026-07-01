@@ -6,6 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
+    add_versions("v0.1.2", "f6b35d938b66ad32dbc558156e028defd2b5f60827f9643598cef4dc2353d263")
     add_versions("v0.1.1", "b91baa762dfdbe9273f348fa023a835f05776a73cb4c75c5c9dd7d511bbe3063")
     add_versions("v0.1.0", "6aba9d064743ae50840fc04b13474aaad568e196330ef0f11d27ad335fb60fec")
 
@@ -16,16 +17,27 @@ package("vri")
     add_configs("wgpu",   {description = "Enable the WebGPU backend", default = false, type = "boolean"})
 
     on_load(function (package)
+        -- Propagate this package's MSVC runtime to the backend deps we add below. on_load runs
+        -- after the consumer's add_requireconfs("**") is resolved, so deps added here would
+        -- otherwise miss the runtime and fall back to CMake's /MD default - which then fails to
+        -- link into an /MT consumer (LNK2038). (Same idiom as the vshadersystem package.)
+        local dep_configs = {}
+        if package:is_plat("windows") and package:runtimes() then
+            dep_configs.runtimes = package:runtimes()
+        end
+
         -- Dependency set per backend, matching VRI's external/xmake.lua.
         if package:config("vulkan") and not package:is_plat("wasm") then
             package:add("deps", "vulkan-headers 1.4.335", "vulkan-memory-allocator")
         end
         if package:config("gl") then
-            package:add("deps", "spirv-cross vulkan-sdk-1.4.335")
+            package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs})
             if not package:is_plat("wasm") then
-                package:add("deps", "glad", {configs = {profile = "core", api = "gl=4.6"}})
+                local glad_configs = {profile = "core", api = "gl=4.6"}
+                if dep_configs.runtimes then glad_configs.runtimes = dep_configs.runtimes end
+                package:add("deps", "glad", {configs = glad_configs})
                 if not package:is_plat("linux") then
-                    package:add("deps", "glfw")
+                    package:add("deps", "glfw", {configs = dep_configs})
                 end
             end
         end
