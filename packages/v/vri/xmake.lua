@@ -6,7 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
-    add_versions("v0.1.2", "f6b35d938b66ad32dbc558156e028defd2b5f60827f9643598cef4dc2353d263")
+    add_versions("v0.1.2", "c169e504038382dc079aa7e267c82f3371eb561c6fa6f44fa59857268be6cdbd")
     add_versions("v0.1.1", "b91baa762dfdbe9273f348fa023a835f05776a73cb4c75c5c9dd7d511bbe3063")
     add_versions("v0.1.0", "6aba9d064743ae50840fc04b13474aaad568e196330ef0f11d27ad335fb60fec")
 
