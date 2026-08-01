@@ -39,6 +39,19 @@ package("vri")
         -- Dependency set per backend, matching VRI's external/xmake.lua.
         if package:config("vulkan") and not package:is_plat("wasm") then
             package:add("deps", "vulkan-headers 1.4.335", "vulkan-memory-allocator")
+            -- The loader. Same package-boundary problem as the GL/D3D12/Metal branches below,
+            -- but one step worse: VRI links it through a rule("vulkansdk") declared in its own
+            -- root xmake.lua, and a project-level rule doesn't travel with the installed package
+            -- at all. Without this a consumer's link fails with ~117 undefined vk* symbols
+            -- (vkCreateInstance, vkQueuePresentKHR, vkCreateWin32SurfaceKHR, ...) even though
+            -- vri.lib itself built fine.
+            -- No dep_configs: the loader is a C-ABI import library, so it has no MSVC runtime
+            -- coupling - same reason vulkan-headers and VMA above don't take it either.
+            if package:is_plat("android") then
+                package:add("syslinks", "vulkan") -- part of the platform there
+            else
+                package:add("deps", "vulkan-loader")
+            end
         end
         if package:config("gl") then
             package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs})
