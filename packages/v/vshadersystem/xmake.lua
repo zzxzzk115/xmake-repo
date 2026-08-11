@@ -8,10 +8,12 @@ package("vshadersystem")
 
     -- Only the current line (v1.0.x, Slang) and the last v0.x (v0.11.3) are kept; older
     -- releases were pruned to keep this package maintainable.
+    add_versions("source:v1.2.0", "0ddfd958fe0a22f2a146c85e164919d14603dadab5dd643a801c5395eb605c27")
     add_versions("source:v1.1.0", "c9bfb7404cb0981249299c2d737a2bd847b8b96f0b84cd0a3ccfa378aa0318c5")
     add_versions("source:v1.0.1", "dae7d84a50ce7e655bb312c981cc48e633d6a6a5c80f401ac76b0e09dfdefaf4")
     add_versions("source:v1.0.0", "f6951fa34e2f8dab62d7a17dfcd58aed1f4b4ae015a107bbee4de39833c32f15")
     add_versions("source:v0.11.3", "b899ef123964aa15a99440d5cbf32671081bc647bfb3c3c52ebd2eeda65ff779")
+    add_versions("git:v1.2.0", "v1.2.0")
     add_versions("git:v1.1.0", "v1.1.0")
     add_versions("git:v1.0.1", "v1.0.1")
     add_versions("git:v1.0.0", "v1.0.0")
@@ -112,7 +114,26 @@ package("vshadersystem")
         local asset = _prebuilt_asset(package)
         if asset then
             local prebuilt
-            if package:version():ge("1.1.0") then
+            if package:version():ge("1.2.0") then
+                prebuilt = {
+                    ["android-arm64-v8a"] = "1353258cc5f45af7b1c56d3368eb0d84c0fa8db0c4ff81515f7c76bdce9dea20",
+                    ["android-armeabi-v7a"] = "c79d5e06cd4aa3d996934a4cbf5499fd3cc22720987c720627d1a96376a8a7c1",
+                    ["android-x86_64"] = "5f16b37d2e0ed5c0aa63715d5e57cf0e62545844759732e3eee768c2ace5450b",
+                    ["linux-arm64"] = "ab2a061df6481ddf8499a76dbb85b5acc8e14553f6c81efd4cf2234ea0ff410b",
+                    ["linux-x86"] = "a20494c629bc6ff8852a6b30864fa3354d5ea51bcb89fe5cd9345c821c0c5083",
+                    ["linux-i386"] = "a20494c629bc6ff8852a6b30864fa3354d5ea51bcb89fe5cd9345c821c0c5083",
+                    ["linux-x64"] = "3fa542ac7ce280cead908ad87329449d82edd5c147b5ff73b52b828418f9b213",
+                    ["linux-x86_64"] = "3fa542ac7ce280cead908ad87329449d82edd5c147b5ff73b52b828418f9b213",
+                    ["macosx-arm64"] = "d606be8c21f8fb5d0232fa8d638e636963df9ca8b58999d734a4589a0602b5ff",
+                    ["wasm-wasm32"] = "e4be00ab136ae2a496a0f251a98346f131f44523939c8a527d36f346c207fdca",
+                    ["windows-x64-msvc-14.29-md"] = "ff63e683f0e35b49a10221cbb419285892c869adf3d0f9518ff6c1e6d2d9e298",
+                    ["windows-x64-msvc-14.29-mt"] = "51b27ef95c29c04c4f0f55235e33199ea738fce35869070b9145f9721480528c",
+                    ["windows-x64-msvc-14.44-md"] = "80fbc9f5796a5483bc22e43f263c631e8f97f7c32b24cedf1afa26530415a894",
+                    ["windows-x64-msvc-14.44-mt"] = "28df0a6774ec46bd99bf551bab969cc9e22db430afe8364a26e0fbc513125632",
+                    ["windows-x64-msvc-latest-md"] = "0ffb9ae8e997f5e553139e1c70030239a170ec2767443c4ba4a5c56c6ec6c0ad",
+                    ["windows-x64-msvc-latest-mt"] = "0bbcb389950a7fe6be29f500059b3bf42087c1c8cf72b9fcb6bd0b7f342505f7"
+                }
+            elseif package:version():ge("1.1.0") then
                 prebuilt = {
                     ["android-arm64-v8a"] = "4f7268314d6c5c688dc8ee7a2399b6100ed60bd64f654f745ad90be4eed52616",
                     ["android-armeabi-v7a"] = "dbc3abac51db94cb8d590be4d2439d4a5f57109a61a31e5ae256606dd1d9d359",
