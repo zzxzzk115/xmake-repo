@@ -7,7 +7,9 @@ package("vplot")
     add_urls("https://github.com/zzxzzk115/vplot/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vplot.git", {alias = "git"})
 
+    add_versions("source:0.1.1", "311c3bd5290b88bb51378762c951ca32c18f292ef80f2612599a3579f79712bf")
     add_versions("source:0.1.0", "d6d33103ae1fbf4b381f5d5b3ed44042503d1d0eebb7d1e8880ef034a99ff61b")
+    add_versions("git:0.1.1", "0.1.1")
     add_versions("git:0.1.0", "0.1.0")
 
     -- Agg is vendored (matplotlib's patched 2.4 snapshot, deliberately not the `agg` package --
@@ -36,8 +38,17 @@ package("vplot")
 
         -- vplot declares no add_headerfiles, so `xmake install` ships the archives and nothing
         -- else. The public C ABI lives in include/vpl; copy it ourselves rather than patching
-        -- upstream, so this package works against the 0.1.0 tag as released.
+        -- upstream, so this works against the tags as released.
         os.cp("include/vpl", package:installdir("include"))
+
+        -- 0.1.0 renders text only if it finds assets/fonts/DejaVuSans.ttf by walking up from the
+        -- working directory, which a package consumer never can - and vplot SKIPS text rather
+        -- than failing, so the result is a figure with correct axes and no labels at all. Ship
+        -- the fonts so such a consumer at least has a file to aim vplSetFontPath at. 0.1.1
+        -- embeds the face and needs none of this.
+        if package:version():lt("0.1.1") then
+            os.trycp("assets/fonts", package:installdir("share", "vplot"))
+        end
     end)
 
     on_test(function (package)
