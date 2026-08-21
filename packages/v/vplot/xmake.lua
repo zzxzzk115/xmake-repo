@@ -7,8 +7,10 @@ package("vplot")
     add_urls("https://github.com/zzxzzk115/vplot/archive/refs/tags/$(version).tar.gz", {alias = "source"})
     add_urls("https://github.com/zzxzzk115/vplot.git", {alias = "git"})
 
+    add_versions("source:0.1.2", "5702c5c2e47761ede60080702717832522d9b53d2e018bcb1ad365d39fc78bd0")
     add_versions("source:0.1.1", "311c3bd5290b88bb51378762c951ca32c18f292ef80f2612599a3579f79712bf")
     add_versions("source:0.1.0", "d6d33103ae1fbf4b381f5d5b3ed44042503d1d0eebb7d1e8880ef034a99ff61b")
+    add_versions("git:0.1.2", "0.1.2")
     add_versions("git:0.1.1", "0.1.1")
     add_versions("git:0.1.0", "0.1.0")
 
