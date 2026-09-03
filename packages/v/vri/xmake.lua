@@ -6,6 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
+    add_versions("v0.1.16", "7f7912ee7eddda626d899c1f645a0bbd5c446fdddacfd6271a3094c779eb6dde")
     add_versions("v0.1.15", "5916112f25f3ab1af4a747fef2c797cb566225f63dd51204f0284dbd5723c8fc")
     add_versions("v0.1.14", "5eaa2e2a46aa238e88d4ee63c10251e7ff5f49b0230ff1c44a9c8690791affc4")
     add_versions("v0.1.13", "a325ab510db6d42b827bde4e289cd6d4f3f0be2a0086d9abca3400296ec2d950")
@@ -54,6 +55,17 @@ package("vri")
             -- coupling - same reason vulkan-headers and VMA above don't take it either.
             if package:is_plat("android") then
                 package:add("syslinks", "vulkan") -- part of the platform there
+            elseif package:is_plat("macosx") then
+                -- Not on macOS. vulkan-loader's macOS on_fetch answers with the WHOLE
+                -- ~/VulkanSDK/<first glob match>/macOS/lib as a link dir, and the LunarG SDK ships
+                -- libglslang.a / libSPIRV.a in there next to the loader. That dir lands ahead of
+                -- the package link dirs, so `-lglslang` / `-lSPIRV` then resolve to the SDK's
+                -- glslang instead of the glslang PACKAGE's - and the SDK's SPIRV is built with
+                -- ENABLE_OPT, so the consumer's link dies on ~20 undefined spvtools:: symbols that
+                -- nothing in the dependency graph ever asked for. (Which SDK wins is also just
+                -- whichever sorts first, so the failure is machine-dependent.)
+                -- macOS consumers get the loader from vrf's rule("vulkansdk"), which links
+                -- libvulkan.dylib by absolute path and adds no link dir.
             else
                 package:add("deps", "vulkan-loader")
             end
