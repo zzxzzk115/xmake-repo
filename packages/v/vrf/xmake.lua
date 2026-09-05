@@ -82,13 +82,24 @@ package("vrf")
             package:add("deps", "tracy", {configs = dep_configs})
         end
 
-        -- KNOWN GAP (v0.1.0): VRI-Framework declares its vendored GaussForge/spz as separate
-        -- static-lib targets with set_default(false), so `xmake install` skips them and only
-        -- vrf.lib is packaged. Everything except the gaussian-splat loader links fine; calling
-        -- that path yields undefined gf::/spz symbols. Deliberately NOT adding them to `links`
-        -- here: naming libs the package does not ship turns a clear undefined-symbol error into
-        -- a confusing "cannot open GaussForge.lib". (The vasset package has the same gap.)
-        -- The real fix belongs upstream and is targeted for v0.1.1.
+        -- Vendored gaussian-splat stack (GaussForge + spz + zlib), reached from vrf's
+        -- gaussian-splat loader. v0.1.0 declared these as static-lib targets with
+        -- set_default(false), so `xmake install` skipped them and only vrf.lib was packaged --
+        -- naming them in `links` there would turn a clear undefined-symbol error into a
+        -- confusing "cannot open GaussForge.lib", so v0.1.0 stays as it is: consumers that
+        -- touch that loader get undefined gf::/spz symbols, everything else links fine.
+        --
+        -- VRI-Framework #8 makes them default targets, so from v0.1.1 they ship in lib/ and
+        -- must be linked. Order matters for GNU ld: vrf.lib references gf::, GaussForge
+        -- references spz::. zlib is spz's own dep and, unlike the vasset package, nothing else
+        -- in vrf's graph pulls it in (bake_bc7/ktx2 are off by default), so without it the
+        -- consumer link fails on deflate/inflate out of spz.lib.
+        -- A nil version means a git-branch install, which tracks master and carries the fix.
+        local version = package:version()
+        if not version or version:ge("0.1.1") then
+            package:add("links", "vrf", "GaussForge", "spz")
+            package:add("deps", "zlib", {configs = dep_configs})
+        end
     end)
 
     on_install("windows", "linux", "macosx", function (package)
