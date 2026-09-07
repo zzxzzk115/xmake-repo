@@ -6,6 +6,7 @@ package("vrf")
     add_urls("https://github.com/zzxzzk115/VRI-Framework/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI-Framework.git")
 
+    add_versions("v0.1.1", "a0c03a78ce21c1b628c58f577fac6b0496179a64ade4a704457f32af93cfcf42")
     add_versions("v0.1.0", "d4591f0a325bb2fab5815033d7c1bdcb688cf2bdf6b42d9b98d6dc6cfec30520")
 
     -- Mirrors VRI-Framework's own vrf_* options. Defaults follow upstream, EXCEPT bake_bc7:
@@ -50,7 +51,8 @@ package("vrf")
             metal  = package:config("metal"),
         }
         if dep_configs.runtimes then vri_configs.runtimes = dep_configs.runtimes end
-        package:add("deps", "vri v0.1.15", {configs = vri_configs})
+        local vri_version = package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15"
+        package:add("deps", "vri " .. vri_version, {configs = vri_configs})
 
         -- vshadersystem is confined to shader_library.cpp (PImpl) so its headers stay out of the
         -- public API - but it is a real static lib compiled into vrf.lib, so its symbols (plus
@@ -72,6 +74,7 @@ package("vrf")
         end
         if package:config("draco")  then package:add("deps", "draco", {configs = dep_configs}) end
         if package:config("vplot")  then package:add("deps", "vplot 0.1.1", {configs = dep_configs}) end
+        if package:config("vplot") then package:add("defines", "VRF_WITH_VPLOT") end
         if package:config("openxr") then
             package:add("defines", "VRF_WITH_OPENXR")
             package:add("deps", "openxr", {configs = dep_configs})
@@ -82,13 +85,11 @@ package("vrf")
             package:add("deps", "tracy", {configs = dep_configs})
         end
 
-        -- KNOWN GAP (v0.1.0): VRI-Framework declares its vendored GaussForge/spz as separate
-        -- static-lib targets with set_default(false), so `xmake install` skips them and only
-        -- vrf.lib is packaged. Everything except the gaussian-splat loader links fine; calling
-        -- that path yields undefined gf::/spz symbols. Deliberately NOT adding them to `links`
-        -- here: naming libs the package does not ship turns a clear undefined-symbol error into
-        -- a confusing "cannot open GaussForge.lib". (The vasset package has the same gap.)
-        -- The real fix belongs upstream and is targeted for v0.1.1.
+        -- v0.1.0 did not install the gaussian loader's private archives.
+        if package:version():ge("0.1.1") then
+            package:add("links", "vrf", "GaussForge", "spz")
+            package:add("deps", "zlib", {configs = dep_configs})
+        end
     end)
 
     on_install("windows", "linux", "macosx", function (package)
