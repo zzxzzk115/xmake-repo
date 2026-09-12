@@ -8,7 +8,7 @@ if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MTd" or "MT")
     add_requireconfs("**", {configs = {runtimes = is_mode("debug") and "MTd" or "MT"}})
 end
-add_requires("vrf e83801fa4684cb5b771523344c6fed36657093bf")
+add_requires("vrf e6d3bc37736b61f53121a2100fd2f60885d78514")
 add_requires("vasset 340e64a4c654a23cd6a15ee5798cb8fd2acc1c44", {configs = {link_importers = true}})
 -- The importer needs the compiler library; resolve one configuration for runtime and importer.
 add_requireconfs("**.vshadersystem", {override = true, version = "v1.2.1", configs = {vshaderc_lib = true}})
