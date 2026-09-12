@@ -10,7 +10,6 @@ if is_plat("windows") then
 end
 add_requires("vrf e5370db1d1e10a0cc50f29aa090902e489d359fa")
 add_requires("vasset 340e64a4c654a23cd6a15ee5798cb8fd2acc1c44", {configs = {link_importers = true}})
-add_requireconfs("**.vri", {override = true, version = "cdf8412c962424b0af12d2b56e478f25a1503550"})
 -- The importer needs the compiler library; resolve one configuration for runtime and importer.
 add_requireconfs("**.vshadersystem", {override = true, version = "v1.2.1", configs = {vshaderc_lib = true}})
 

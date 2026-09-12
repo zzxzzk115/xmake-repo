@@ -6,6 +6,7 @@ on:
       - 'packages/v/vrf/**'
       - 'packages/v/vasset/**'
       - 'packages/v/vri/**'
+      - 'packages/v/vshadersystem/**'
       - 'scripts/shader-consumer/**'
       - '.github/workflows/shader-consumer.yml'
 

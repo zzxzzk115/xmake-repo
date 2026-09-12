@@ -54,7 +54,8 @@ package("vrf")
             metal  = package:config("metal"),
         }
         if dep_configs.runtimes then vri_configs.runtimes = dep_configs.runtimes end
-        local vri_version = (shader_update or package:version():ge("0.1.1")) and "v0.1.17" or "v0.1.15"
+        local vri_version = shader_update and "cdf8412c962424b0af12d2b56e478f25a1503550"
+            or (package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15")
         package:add("deps", "vri " .. vri_version, {configs = vri_configs})
 
         -- vshadersystem is confined to shader_library.cpp (PImpl) so its headers stay out of the
