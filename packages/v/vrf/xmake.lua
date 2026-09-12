@@ -36,6 +36,7 @@ package("vrf")
         local shader_update = package:commit() == "19697ab9a0d7f1ce8fc4c01234ae4d1a96aea813"
             or package:commit() == "e83801fa4684cb5b771523344c6fed36657093bf"
             or package:commit() == "e6d3bc37736b61f53121a2100fd2f60885d78514"
+            or package:commit() == "b9db9278b8b8cdeb8edc5fd26ceff355f2cae705"
         assert(package:version() or shader_update, "vrf: unsupported development ref; use the validated LAZ-72 commit")
         -- Same idiom as the vri package: on_load runs after the consumer's add_requireconfs("**")
         -- resolves, so deps added here must carry the runtime explicitly or they fall back to
