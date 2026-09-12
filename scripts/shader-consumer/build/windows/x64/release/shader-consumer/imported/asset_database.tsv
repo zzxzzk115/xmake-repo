@@ -1,3 +1,0 @@
-# vasset import database (tsv)
-# uid	importer	source	output	importer_version	output_schema	source_hash	dependency_hash	params_hash
-2c1391c655d5556fb0c074b3f8f7c870	shader_library	smoke.vshaderlib.lua	imported/shader_library/smoke.vshlib	shader_library:3:vshadersystem:1.2.1	vshlib:v4+vshweblib:1	651268537864736900	5641885021241333757	0
