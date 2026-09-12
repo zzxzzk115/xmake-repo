@@ -3,7 +3,7 @@
 This consumer uses immutable Git commits, not new release tags:
 
 - VRI #19: `8500248c843908076fc490f725342b959699259a`
-- VRI-Framework #11: `e83801fa4684cb5b771523344c6fed36657093bf`
+- VRI-Framework #11: `b9db9278b8b8cdeb8edc5fd26ceff355f2cae705`
 - vasset #4: `340e64a4c654a23cd6a15ee5798cb8fd2acc1c44`
 
 Run from this directory:

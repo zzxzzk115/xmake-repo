@@ -35,7 +35,9 @@ package("pkgconf")
     end)
 
     on_install("@windows", function(package)
-        import("package.tools.meson").install(package, {"-Dtests=disabled"})
+        -- The CLI exchanges allocations and FILE pointers with libpkgconf. Separate
+        -- static CRTs in an EXE and DLL cannot safely share those objects.
+        import("package.tools.meson").install(package, {"-Dtests=disabled", "-Ddefault_library=static"})
         local bindir = package:installdir("bin")
         os.cp(path.join(bindir, "pkgconf.exe"), path.join(bindir, "pkg-config.exe"))
     end)
@@ -45,4 +47,16 @@ package("pkgconf")
         if is_subhost("windows") then
             os.vrun("pkg-config --version")
         end
+        local pcfile = os.tmpfile() .. ".pc"
+        io.writefile(pcfile, [[
+Name: pkgconf-runtime-probe
+Description: Exercise parsing and fragment allocation across the CLI/library boundary
+Version: 1.0
+Libs: -lpkgconf_runtime_probe
+Cflags: -DPKGCONF_RUNTIME_PROBE
+]])
+        local libs = os.iorunv("pkgconf", {"--libs-only-l", pcfile}, {timeout = 10000})
+        assert(libs:trim() == "-lpkgconf_runtime_probe")
+        local flags = os.iorunv("pkgconf", {"--cflags", pcfile}, {timeout = 10000})
+        assert(flags:trim() == "-DPKGCONF_RUNTIME_PROBE")
     end)
