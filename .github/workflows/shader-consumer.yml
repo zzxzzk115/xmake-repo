@@ -1,0 +1,48 @@
+name: Shader package integration
+
+on:
+  pull_request:
+    paths:
+      - 'packages/v/vrf/**'
+      - 'packages/v/vasset/**'
+      - 'packages/v/vri/**'
+      - 'scripts/shader-consumer/**'
+      - '.github/workflows/shader-consumer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  consumer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: scripts/shader-consumer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: latest
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+          vulkan-use-cache: true
+      - name: Install Linux window dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorg-dev libgl1-mesa-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+        with:
+          arch: x64
+          toolset: '14.44'
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '3.0.9'
+      - run: xmake f -y -m release
+      - run: xmake build -y shader-package-consumer
+      - run: xmake run shader-package-consumer
