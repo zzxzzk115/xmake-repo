@@ -59,7 +59,11 @@ package("vasset")
         -- runtime lib. dds-ktx is header-only and compiled into vasset, so no archive is linked.
         if link_importers then
             package:add("links", "vasset-import", "GaussForge", "spz")
-            if shader_update then package:add("deps", "zlib") end
+            if shader_update then
+                local zlib_configs = {}
+                if package:is_plat("windows") then zlib_configs.runtimes = package:runtimes() end
+                package:add("deps", "zlib", {configs = zlib_configs})
+            end
         end
         package:add("links", "vasset")
 

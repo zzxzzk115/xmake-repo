@@ -1,0 +1,12 @@
+[vimport]
+version=1
+importer="shader_library"
+uid="2c1391c655d5556fb0c074b3f8f7c870"
+
+[source]
+file="smoke.vshaderlib.lua"
+
+[output]
+file="imported/shader_library/smoke.vshlib"
+
+[params]

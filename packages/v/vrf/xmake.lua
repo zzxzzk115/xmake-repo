@@ -33,7 +33,7 @@ package("vrf")
 
     on_load(function (package)
         -- An immutable integration pin lets consumers validate the shader upgrade before a release.
-        local shader_update = package:commit() == "e5370db1d1e10a0cc50f29aa090902e489d359fa"
+        local shader_update = package:commit() == "19697ab9a0d7f1ce8fc4c01234ae4d1a96aea813"
         assert(package:version() or shader_update, "vrf: unsupported development ref; use the validated LAZ-72 commit")
         -- Same idiom as the vri package: on_load runs after the consumer's add_requireconfs("**")
         -- resolves, so deps added here must carry the runtime explicitly or they fall back to
@@ -54,7 +54,7 @@ package("vrf")
             metal  = package:config("metal"),
         }
         if dep_configs.runtimes then vri_configs.runtimes = dep_configs.runtimes end
-        local vri_version = shader_update and "cdf8412c962424b0af12d2b56e478f25a1503550"
+        local vri_version = shader_update and "8500248c843908076fc490f725342b959699259a"
             or (package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15")
         package:add("deps", "vri " .. vri_version, {configs = vri_configs})
 

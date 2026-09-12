@@ -2,8 +2,8 @@
 
 This consumer uses immutable Git commits, not new release tags:
 
-- VRI #19: `cdf8412c962424b0af12d2b56e478f25a1503550`
-- VRI-Framework #11: `e5370db1d1e10a0cc50f29aa090902e489d359fa`
+- VRI #19: `8500248c843908076fc490f725342b959699259a`
+- VRI-Framework #11: `19697ab9a0d7f1ce8fc4c01234ae4d1a96aea813`
 - vasset #4: `340e64a4c654a23cd6a15ee5798cb8fd2acc1c44`
 
 Run from this directory:
