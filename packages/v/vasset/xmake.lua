@@ -26,6 +26,7 @@ package("vasset")
     add_deps("miniaudio 0.11.25", {public = true})
 
     on_load(function (package)
+        local shader_update = package:commit() == "340e64a4c654a23cd6a15ee5798cb8fd2acc1c44"
         -- ktx (+ opencl) mirror the vasset runtime target configs.
         local ktx_opencl = not package:is_plat("android", "wasm", "iphoneos")
         package:add("deps", "ktx", {configs = {decoder = true, opencl = ktx_opencl, shared = false, vulkan = true}, public = true})
@@ -43,7 +44,13 @@ package("vasset")
             local imp_private = not link_importers
             package:add("deps", "assimp", {configs = {shared = false, draco = package:is_plat("windows")}, private = imp_private})
             package:add("deps", "ozz-animation", {configs = {tools = false, fbx = false, gltf = false, data = false}, private = imp_private})
-            package:add("deps", "vshadersystem v0.11.3", {private = imp_private})
+            if shader_update then
+                local shader_configs = {vshaderc_lib = true, debug = package:is_debug()}
+                if package:is_plat("windows") then shader_configs.runtimes = package:runtimes() end
+                package:add("deps", "vshadersystem v1.2.1", {configs = shader_configs, private = imp_private})
+            else
+                package:add("deps", "vshadersystem v0.11.3", {private = imp_private})
+            end
         end
 
         -- Link set. With link_importers, expose the importer lib + its vendored libs (GaussForge/spz)
@@ -52,6 +59,11 @@ package("vasset")
         -- runtime lib. dds-ktx is header-only and compiled into vasset, so no archive is linked.
         if link_importers then
             package:add("links", "vasset-import", "GaussForge", "spz")
+            if shader_update then
+                local zlib_configs = {}
+                if package:is_plat("windows") then zlib_configs.runtimes = package:runtimes() end
+                package:add("deps", "zlib", {configs = zlib_configs})
+            end
         end
         package:add("links", "vasset")
 

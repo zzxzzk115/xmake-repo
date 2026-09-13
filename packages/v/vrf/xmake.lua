@@ -32,6 +32,12 @@ package("vrf")
     add_deps("fg", "glm")
 
     on_load(function (package)
+        -- An immutable integration pin lets consumers validate the shader upgrade before a release.
+        local shader_update = package:commit() == "19697ab9a0d7f1ce8fc4c01234ae4d1a96aea813"
+            or package:commit() == "e83801fa4684cb5b771523344c6fed36657093bf"
+            or package:commit() == "e6d3bc37736b61f53121a2100fd2f60885d78514"
+            or package:commit() == "b9db9278b8b8cdeb8edc5fd26ceff355f2cae705"
+        assert(package:version() or shader_update, "vrf: unsupported development ref; use the validated LAZ-72 commit")
         -- Same idiom as the vri package: on_load runs after the consumer's add_requireconfs("**")
         -- resolves, so deps added here must carry the runtime explicitly or they fall back to
         -- CMake's /MD default and fail to link into an /MT consumer (LNK2038).
@@ -51,13 +57,15 @@ package("vrf")
             metal  = package:config("metal"),
         }
         if dep_configs.runtimes then vri_configs.runtimes = dep_configs.runtimes end
-        local vri_version = package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15"
+        local vri_version = shader_update and "8500248c843908076fc490f725342b959699259a"
+            or (package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15")
         package:add("deps", "vri " .. vri_version, {configs = vri_configs})
 
         -- vshadersystem is confined to shader_library.cpp (PImpl) so its headers stay out of the
         -- public API - but it is a real static lib compiled into vrf.lib, so its symbols (plus
         -- spirv-cross/glslang/xxhash) must resolve in the consumer's final link.
-        package:add("deps", "vshadersystem v1.2.0", {configs = dep_configs})
+        local shader_version = shader_update and "v1.2.1" or "v1.2.0"
+        package:add("deps", "vshadersystem " .. shader_version, {configs = dep_configs})
 
         if package:config("imgui") then
             package:add("defines", "VRF_WITH_IMGUI")
@@ -86,7 +94,7 @@ package("vrf")
         end
 
         -- v0.1.0 did not install the gaussian loader's private archives.
-        if package:version():ge("0.1.1") then
+        if shader_update or package:version():ge("0.1.1") then
             package:add("links", "vrf", "GaussForge", "spz")
             package:add("deps", "zlib", {configs = dep_configs})
         end
