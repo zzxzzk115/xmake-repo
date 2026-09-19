@@ -6,6 +6,7 @@ package("vgfw")
     add_urls("https://github.com/zzxzzk115/vgfw/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/vgfw.git")
 	
+    add_versions("v1.2.1", "044c69d785a315d6f3c39d8a74359d2d6ae6b98bbe616ea3ec398bf5efb7457d")
     add_versions("v1.2.0", "53eb5460d1d234dad7daf0c83e9c74638563babeecf8bf1cd817d57a10d8b0ad")
 	add_versions("v1.1.1", "51dfda6e280523ea50c59a2f7ff5a325f196b157d598709a6f145071c91b6160")
 	
