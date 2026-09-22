@@ -6,17 +6,18 @@ package("vrf")
     add_urls("https://github.com/zzxzzk115/VRI-Framework/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI-Framework.git")
 
+    add_versions("v0.1.2", "e85efb3a114c747f5cef4e9b134ff19ebc516f46488a570e93cd8487cb63cf5c")
     add_versions("v0.1.1", "a0c03a78ce21c1b628c58f577fac6b0496179a64ade4a704457f32af93cfcf42")
     add_versions("v0.1.0", "d4591f0a325bb2fab5815033d7c1bdcb688cf2bdf6b42d9b98d6dc6cfec30520")
 
-    -- Mirrors VRI-Framework's own vrf_* options. Defaults follow upstream, EXCEPT bake_bc7:
-    -- upstream defaults it on, but as a package default it drags libktx (CMake + astc-encoder +
-    -- zstd) into every consumer's dependency graph, so it is opt-in here.
+    -- Keep BC7 baking opt-in for package consumers. Before v0.1.2 it requires
+    -- libktx; v0.1.2 encodes directly and optionally uses an ISPC host compiler.
     add_configs("imgui",    {description = "Build the Dear ImGui integration", default = true,  type = "boolean"})
     add_configs("sdl3",     {description = "Build the SDL3 window backend",    default = true,  type = "boolean"})
     add_configs("glfw",     {description = "Build the GLFW window backend",    default = false, type = "boolean"})
     add_configs("ktx2",     {description = "Enable the KTX2 texture loader (libktx)", default = false, type = "boolean"})
-    add_configs("bake_bc7", {description = "Block-compress baked cache textures to BC7 (libktx)", default = false, type = "boolean"})
+    add_configs("bake_bc7", {description = "Block-compress cached textures to BC7 on the CPU", default = false, type = "boolean"})
+    add_configs("bake_bc7_simd", {description = "Use ISPC SSE2/AVX2 BC7 encoding on x86-64 (v0.1.2+)", default = true, type = "boolean"})
     add_configs("openxr",   {description = "Enable OpenXR support (vrf::xr)",  default = false, type = "boolean"})
     add_configs("vplot",    {description = "Enable the vplot plotting integration", default = false, type = "boolean"})
     add_configs("draco",    {description = "Enable Draco-compressed glTF",     default = false, type = "boolean"})
@@ -67,7 +68,14 @@ package("vrf")
         end
         if package:config("sdl3") then package:add("deps", "libsdl3", {configs = dep_configs}) end
         if package:config("glfw") then package:add("deps", "glfw",    {configs = dep_configs}) end
-        if package:config("ktx2") or package:config("bake_bc7") then
+        if package:version():ge("0.1.2") then
+            package:add("deps", "xxhash", {private = true, configs = dep_configs})
+            if package:config("bake_bc7") and package:config("bake_bc7_simd") and
+               package:is_arch("x86_64", "x64") and package:is_plat("windows", "linux", "macosx") then
+                package:add("deps", "ispc 1.28.2", {host = true, private = true})
+            end
+        end
+        if package:config("ktx2") or (package:config("bake_bc7") and package:version():lt("0.1.2")) then
             local ktx_configs = {ktx1 = true, ktx2 = true, shared = false}
             if dep_configs.runtimes then ktx_configs.runtimes = dep_configs.runtimes end
             package:add("deps", "ktx", {configs = ktx_configs})
@@ -111,6 +119,9 @@ package("vrf")
             vrf_backend_d3d12  = package:config("d3d12"),
             vrf_backend_metal  = package:config("metal"),
         }
+        if package:version():ge("0.1.2") then
+            configs.vrf_bake_bc7_simd = package:config("bake_bc7_simd")
+        end
         import("package.tools.xmake").install(package, configs)
     end)
 
