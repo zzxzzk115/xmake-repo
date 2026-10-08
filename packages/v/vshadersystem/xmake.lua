@@ -8,6 +8,7 @@ package("vshadersystem")
 
     -- Only the current line (v1.0.x, Slang) and the last v0.x (v0.11.3) are kept; older
     -- releases were pruned to keep this package maintainable.
+    add_versions("source:v1.4.0", "1d7b24e6b62b068f7588a907826f3f4383f24a6877f0f0c8b06af6d3444dce4a")
     add_versions("source:v1.3.0", "c1d20c24cda179dbcaac04526c0dec70f9385da7982b9bef08ab971645ca76c6")
     add_versions("source:v1.2.1", "f4ac5c9b6508a71916c3b5400b3db96d8245a13b2cece11f5270906714f4036a")
     add_versions("source:v1.2.0", "0ddfd958fe0a22f2a146c85e164919d14603dadab5dd643a801c5395eb605c27")
@@ -15,6 +16,7 @@ package("vshadersystem")
     add_versions("source:v1.0.1", "dae7d84a50ce7e655bb312c981cc48e633d6a6a5c80f401ac76b0e09dfdefaf4")
     add_versions("source:v1.0.0", "f6951fa34e2f8dab62d7a17dfcd58aed1f4b4ae015a107bbee4de39833c32f15")
     add_versions("source:v0.11.3", "b899ef123964aa15a99440d5cbf32671081bc647bfb3c3c52ebd2eeda65ff779")
+    add_versions("git:v1.4.0", "v1.4.0")
     add_versions("git:v1.3.0", "v1.3.0")
     add_versions("git:v1.2.1", "v1.2.1")
     add_versions("git:v1.2.0", "v1.2.0")
@@ -118,7 +120,26 @@ package("vshadersystem")
         local asset = _prebuilt_asset(package)
         if asset then
             local prebuilt
-            if package:version():ge("1.3.0") then
+            if package:version():ge("1.4.0") then
+                prebuilt = {
+                    ["android-arm64-v8a"] = "6f318de9cb40ef5c403e9f54d2e458f7c2384415101ef60f3196fdd72e2cd2e4",
+                    ["android-armeabi-v7a"] = "b55f40d23a6c54a213a285e05ef9e035365f2be8400b2ad9a0d966886e7df9ac",
+                    ["android-x86_64"] = "fd37ddfc09c02a38d9f05fd1831402cd9388fffe46ed1d3ad0540306069c96ca",
+                    ["linux-arm64"] = "d087bf609fa5d56acec4fa9a7c57b240136f1c9aa9c2eb6c57dcde7d7b72a07a",
+                    ["linux-i386"] = "0d68ddf5a00f11d479fdcdf0c24711ffb2d107f6fbfbe01318850d76fb5a3026",
+                    ["linux-x64"] = "81870e64565d970ddea89aee33e030094770968fe71d6ef37a65e438cbf7a188",
+                    ["linux-x86"] = "0d68ddf5a00f11d479fdcdf0c24711ffb2d107f6fbfbe01318850d76fb5a3026",
+                    ["linux-x86_64"] = "81870e64565d970ddea89aee33e030094770968fe71d6ef37a65e438cbf7a188",
+                    ["macosx-arm64"] = "b582d0d5ff1b68850cdb0e302b0b6a54eaf4f1fcd241234555acd07283227b1c",
+                    ["wasm-wasm32"] = "ac95ac41f1871e336d57182a209c0becf1de55fcf5a551428cda44fe8d395022",
+                    ["windows-x64-msvc-14.29-md"] = "e3c449ff8701552917adba0e20fbb262d6b6aa3cb1489a4b8ad7a1f63a0ec572",
+                    ["windows-x64-msvc-14.29-mt"] = "34c655d54ec310a844c3628e804ee64e11778cfd788e730ae030d461ab74a4d4",
+                    ["windows-x64-msvc-14.44-md"] = "73a6b1dab00b31a136fd7b8f321a628b54c101a7edee6d9bff50704135c720dd",
+                    ["windows-x64-msvc-14.44-mt"] = "750d1bee6f8181def25ce7dcdf6b352f74f37e8d32806a233b23b9ad5f9d2309",
+                    ["windows-x64-msvc-latest-md"] = "644ba2ef0cbbe45405ed74e4038cd22c81b725e16b07f3cbbf537e54ce926d44",
+                    ["windows-x64-msvc-latest-mt"] = "0bfd65b875031ae3fa8550c986c4cc81ff49fdfb8e1bdad2f6f492e0707a0332"
+                }
+            elseif package:version():ge("1.3.0") then
                 prebuilt = {
                     ["android-arm64-v8a"] = "49fb84d2bb8a3f516e16af5964f474a7d5ce11fdee6bc1aeb9a36094f48ceac2",
                     ["android-armeabi-v7a"] = "698c9cb8560ff64f29740e6f13f0a6698ec4dcf8fdf830b211cbce8f1d9d0c40",
@@ -266,6 +287,9 @@ package("vshadersystem")
         -- installed; this just links them + the Slang SDK. v1.0.0+ only.
         if package:config("vshaderc_lib") and package:version():ge("1.0.0") then
             package:add("links", "vshaderc-lib")
+            if package:is_plat("linux") and package:version():ge("1.4.0") then
+                package:add("syslinks", "dl", "pthread")
+            end
             package:add("deps", "slang-prebuilt 2026.11", {public = true})
         end
         package:add("links", "vshadersystem")
