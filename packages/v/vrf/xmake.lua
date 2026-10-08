@@ -6,6 +6,7 @@ package("vrf")
     add_urls("https://github.com/zzxzzk115/VRI-Framework/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI-Framework.git")
 
+    add_versions("v0.1.3", "7f872d094ffa2844d3fa3f0c2e3feae339082e50e36fa11821dd188c5f356e07")
     add_versions("v0.1.2", "e85efb3a114c747f5cef4e9b134ff19ebc516f46488a570e93cd8487cb63cf5c")
     add_versions("v0.1.1", "a0c03a78ce21c1b628c58f577fac6b0496179a64ade4a704457f32af93cfcf42")
     add_versions("v0.1.0", "d4591f0a325bb2fab5815033d7c1bdcb688cf2bdf6b42d9b98d6dc6cfec30520")
@@ -52,13 +53,15 @@ package("vrf")
             metal  = package:config("metal"),
         }
         if dep_configs.runtimes then vri_configs.runtimes = dep_configs.runtimes end
-        local vri_version = package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15"
+        local vri_version = package:version():ge("0.1.3") and "v0.1.18" or
+                            (package:version():ge("0.1.1") and "v0.1.17" or "v0.1.15")
         package:add("deps", "vri " .. vri_version, {configs = vri_configs})
 
         -- vshadersystem is confined to shader_library.cpp (PImpl) so its headers stay out of the
         -- public API - but it is a real static lib compiled into vrf.lib, so its symbols (plus
         -- spirv-cross/glslang/xxhash) must resolve in the consumer's final link.
-        package:add("deps", "vshadersystem v1.2.0", {configs = dep_configs})
+        local shader_version = package:version():ge("0.1.3") and "v1.3.0" or "v1.2.0"
+        package:add("deps", "vshadersystem " .. shader_version, {configs = dep_configs})
 
         if package:config("imgui") then
             package:add("defines", "VRF_WITH_IMGUI")
