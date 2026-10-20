@@ -49,11 +49,11 @@ package("vasset")
         -- Link set. With link_importers, expose the importer lib + its vendored libs (GaussForge/spz)
         -- so consumers can call vasset's import/cook/pack C ABI in-process (vasset-import is built
         -- separately from the runtime vasset lib). The importer lib comes first -- it depends on the
-        -- runtime lib. Without link_importers, only the runtime lib + dds-ktx (CLI reached via PATH).
+        -- runtime lib. dds-ktx is header-only and compiled into vasset, so no archive is linked.
         if link_importers then
             package:add("links", "vasset-import", "GaussForge", "spz")
         end
-        package:add("links", "vasset", "dds-ktx")
+        package:add("links", "vasset")
 
         -- GLM configuration the vasset headers are compiled against.
         package:add("defines", "GLM_FORCE_DEPTH_ZERO_TO_ONE", "GLM_ENABLE_EXPERIMENTAL", "GLM_FORCE_RADIANS")
@@ -75,5 +75,11 @@ package("vasset")
     end)
 
     on_test(function (package)
-        assert(package:has_cxxincludes("vasset/vmesh.hpp", {configs = {languages = "c++23"}}))
+        assert(package:check_cxxsnippets({test = [[
+            #include <vasset/vmesh.hpp>
+            int main() {
+                vasset::VMesh mesh;
+                return vasset::loadMesh("missing.vmesh", mesh) ? 1 : 0;
+            }
+        ]]}, {configs = {languages = "c++23"}}))
     end)

@@ -1,0 +1,50 @@
+name: Vasset package consumer
+
+on:
+  pull_request:
+    branches: [backup]
+    paths:
+      - 'packages/v/vasset/**'
+      - 'scripts/vasset-consumer/**'
+      - '.github/workflows/vasset-consumer.yml'
+
+jobs:
+  consumer:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            mode: release
+            runtime: MT
+          - os: windows-2022
+            mode: debug
+            runtime: MTd
+          - os: ubuntu-24.04
+            mode: release
+            runtime: ''
+          - os: macos-14
+            mode: release
+            runtime: ''
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: scripts/vasset-consumer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '3.0.9'
+      - name: Configure the installed package consumer
+        shell: bash
+        run: |
+          args=()
+          if [ -n "${{ matrix.runtime }}" ]; then
+            args+=("--runtimes=${{ matrix.runtime }}")
+          fi
+          xmake f -y -m ${{ matrix.mode }} "${args[@]}"
+      - name: Build and link
+        run: xmake build -y vasset-package-consumer
+      - name: Run missing-file regression
+        run: xmake run vasset-package-consumer
