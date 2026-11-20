@@ -6,6 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
+    add_versions("v0.3.0", "494716fd5bd6bf1e473f0e9649dbf7ce9b1031a8d47fcd45610e155809d7f7da")
     add_versions("v0.2.2", "8c96028afc6316bb3d8b599e3f294edd11eb683b77f952642888ec7109ff9237")
     add_versions("v0.2.1", "310530bbbc90219d4db811f725e0529a2ad003db31b0136372d46f6d0ffbe47a")
     add_versions("v0.2.0", "b3f268b4505eb8624e66b7ef3ae30a8b28cc60ca455e625d269176b849800695")
@@ -59,7 +60,14 @@ package("vri")
             -- vri.lib itself built fine.
             -- No dep_configs: the loader is a C-ABI import library, so it has no MSVC runtime
             -- coupling - same reason vulkan-headers and VMA above don't take it either.
-            if package:is_plat("android") then
+            if package:version() and package:version():ge("0.3.0") then
+                -- From v0.3.0 VRI opens the loader at run time (volk, compiled into vri), so a
+                -- consumer links no loader at all: on Android that keeps a program built for API 26
+                -- free of the Vulkan 1.1+ symbols libvulkan.so exports only from API 28-33.
+                if package:is_plat("linux", "bsd") then
+                    package:add("syslinks", "dl")
+                end
+            elseif package:is_plat("android") then
                 package:add("syslinks", "vulkan") -- part of the platform there
             elseif package:is_plat("macosx") then
                 -- Not on macOS. vulkan-loader's macOS on_fetch answers with the WHOLE
@@ -78,7 +86,12 @@ package("vri")
         end
         if package:config("gl") then
             package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs})
-            if package:is_plat("wasm") then
+            if package:is_plat("android") then
+                -- Android has OpenGL ES only: VRI's GL backend uses the system EGL and libGLESv3
+                -- there (no glad, which generates desktop GL, and no glfw). Public syslinks on VRI's
+                -- own target, which do not cross the package boundary, so re-declared here.
+                package:add("syslinks", "EGL", "GLESv3")
+            elseif package:is_plat("wasm") then
                 -- The GL backend targets WebGL2 (GLES3) via Emscripten's GLFW3 + FULL_ES3 ports.
                 -- FULL_ES3 provides the ES3 entry points the backend calls (glMapBufferRange,
                 -- glTexStorage2D/3D, glGenSamplers, ...); without these link flags a consumer's
@@ -89,9 +102,11 @@ package("vri")
             else
                 local glad_configs = {profile = "core", api = "gl=4.6"}
                 if dep_configs.runtimes then glad_configs.runtimes = dep_configs.runtimes end
-                package:add("deps", "glad", {configs = glad_configs})
+                -- Pinned to what VRI's own build requires: the official glad recipe now defaults to
+                -- glad 2, whose generator and API differ, so an unpinned dep failed to install.
+                package:add("deps", "glad v0.1.36", {configs = glad_configs})
                 if not package:is_plat("linux") then
-                    package:add("deps", "glfw", {configs = dep_configs})
+                    package:add("deps", "glfw 3.4", {configs = dep_configs})
                 end
                 -- Public syslinks/frameworks the GL backend needs. VRI's source/xmake.lua adds
                 -- these to its own target as {public = true}, but a target's public syslinks do
