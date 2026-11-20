@@ -102,9 +102,11 @@ package("vri")
             else
                 local glad_configs = {profile = "core", api = "gl=4.6"}
                 if dep_configs.runtimes then glad_configs.runtimes = dep_configs.runtimes end
-                package:add("deps", "glad", {configs = glad_configs})
+                -- Pinned to what VRI's own build requires: the official glad recipe now defaults to
+                -- glad 2, whose generator and API differ, so an unpinned dep failed to install.
+                package:add("deps", "glad v0.1.36", {configs = glad_configs})
                 if not package:is_plat("linux") then
-                    package:add("deps", "glfw", {configs = dep_configs})
+                    package:add("deps", "glfw 3.4", {configs = dep_configs})
                 end
                 -- Public syslinks/frameworks the GL backend needs. VRI's source/xmake.lua adds
                 -- these to its own target as {public = true}, but a target's public syslinks do
