@@ -6,7 +6,7 @@ target("blake3")
     add_headerfiles("c/blake3.h")
 
     if is_arch("x86_64", "x64") then
-        if is_subhost("msys", "cygwin") then
+        if is_plat("mingw", "msys", "cygwin") then
             add_files("c/*x86-64_windows_gnu.S")
         elseif is_plat("windows") then
             add_files("c/*x86-64_windows_msvc.asm")
@@ -15,10 +15,19 @@ target("blake3")
         end
     elseif is_arch("x86", "i386") then
         add_files("c/blake3_portable.c")
-        add_files("c/blake3_sse2.c")
-        add_files("c/blake3_sse41.c")
-        add_files("c/blake3_avx2.c")
-        add_files("c/blake3_avx512.c")
+        on_config(function (target)
+            if target:has_tool("cc", "cl") then
+                target:add("files", "c/blake3_sse2.c")
+                target:add("files", "c/blake3_sse41.c")
+                target:add("files", "c/blake3_avx2.c")
+                target:add("files", "c/blake3_avx512.c")
+            else
+                target:add("files", "c/blake3_sse2.c", {cflags = "-msse2"})
+                target:add("files", "c/blake3_sse41.c", {cflags = "-msse4.1"})
+                target:add("files", "c/blake3_avx2.c", {cflags = "-mavx2"})
+                target:add("files", "c/blake3_avx512.c", {cflags = {"-mavx512f", "-mavx512vl"}})
+            end
+        end)
     elseif is_arch("arm64", "arm64-v8a") then
         add_files("c/blake3_neon.c")
         add_defines("BLAKE3_USE_NEON=1")

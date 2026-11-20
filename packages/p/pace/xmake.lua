@@ -1,0 +1,128 @@
+package("pace")
+    set_homepage("https://github.com/TabNahida/PACE")
+    set_description("Parallel Async Coroutine Engine: C++20 coroutine networking from sockets to HTTP/3.")
+    set_license("MIT")
+
+    add_urls("https://github.com/TabNahida/PACE/archive/refs/tags/v$(version).tar.gz",
+             "https://github.com/TabNahida/PACE.git")
+    add_versions("0.6.0", "0e3ef6b154c0727c4eff241d1ad94df953465848e499d35d121ac04ac81317ec")
+    add_versions("0.5.0", "cb5e24bb2fbf0667d5783afa46b9ede52f6dcbf74fb4920551eca0732126423b")
+    add_versions("0.4.0", "46957eec8edaecc1d0806810f9114a8bfd3af685dad44018579288151afbeed6")
+    add_versions("0.3.1", "8688313d3051cfa9f034ae1ec34d0def94677754fb4336ccf7881ebfa3b95d39")
+    add_versions("0.3.0", "b55a2ffeb917295159de7c8e753a7c8735a51a3ab7429612dde1a0f5b526a831")
+
+    add_configs("shared", {description = "Build shared libraries.", default = false, type = "boolean", readonly = true})
+    add_configs("http1", {description = "Enable HTTP/1.0 and HTTP/1.1.", default = true, type = "boolean"})
+    add_configs("websocket", {description = "Enable WebSocket.", default = true, type = "boolean"})
+    add_configs("tls", {description = "Enable TLS/HTTPS with OpenSSL.", default = false, type = "boolean"})
+    add_configs("dns", {description = "Enable asynchronous DNS with c-ares.", default = false, type = "boolean"})
+    add_configs("modules", {description = "Provide the C++20 named module (PACE >= 0.6.0).", default = false, type = "boolean"})
+    add_configs("quic_backend", {description = "Select the QUIC transport (auto uses the release default).", default = "auto", values = {"auto", "ngtcp2", "openssl"}})
+    add_configs("quic", {description = "Enable QUIC (POSIX only).", default = false, type = "boolean"})
+    add_configs("http2", {description = "Enable HTTP/2 with nghttp2.", default = false, type = "boolean"})
+    add_configs("http3", {description = "Enable HTTP/3 and QUIC (POSIX only).", default = false, type = "boolean"})
+    add_configs("uring", {description = "Enable the Linux io_uring readiness backend (PACE >= 0.5.0).", default = false, type = "boolean"})
+    add_configs("profiling", {description = "Enable intrusive per-thread stage timings.", default = false, type = "boolean"})
+
+    on_load(function (package)
+        if package:config("uring") then
+            assert(package:is_plat("linux") and (not package:version() or package:version():ge("0.5.0")),
+                   "package(pace): uring requires Linux and PACE >= 0.5.0")
+            package:add("deps", "liburing 2.12")
+            package:add("defines", "PACE_HAS_IO_URING")
+        end
+        local quic = package:config("quic") or package:config("http3")
+        if quic and package:is_plat("windows", "mingw") then
+            raise("PACE QUIC/HTTP3 currently require a POSIX platform")
+        end
+
+        if package:is_plat("windows") and package:is_arch("arm64") and package:config("tls") then
+            raise("package(pace): Windows ARM64 TLS needs the corrected OpenSSL recipe in the PACE source build; the public openssl3 dependency is not yet compatible")
+        end
+        if package:config("tls") or quic then
+            package:add("deps", "openssl3 3.5.7")
+        end
+        local modern = not package:version() or package:version():ge("0.6.0")
+        if package:config("modules") then
+            assert(modern, "package(pace): named modules require PACE >= 0.6.0")
+            package:add("links", "pace_module")
+        end
+        if quic and package:config("quic_backend") ~= "openssl" then
+            if modern then
+                package:add("deps", "ngtcp2 1.26.0", {configs = {openssl = "openssl3"}})
+                package:add("defines", "PACE_QUIC_NGTCP2")
+            else
+                assert(package:config("quic_backend") == "auto", "package(pace): ngtcp2 requires PACE >= 0.6.0")
+            end
+        end
+        if package:config("dns") then
+            package:add("deps", "c-ares 1.34.8")
+        end
+        if package:config("http2") then
+            package:add("deps", "nghttp2 1.70.0")
+        end
+        if package:config("http3") then
+            package:add("deps", "nghttp3 v1.18.0")
+        end
+
+        -- Static libraries must precede the PACE modules they depend on.
+        for _, name in ipairs({"http3", "http2", "http1", "websocket", "quic", "tls", "dns"}) do
+            if package:config(name) or (name == "quic" and quic) then
+                package:add("links", "pace_" .. name)
+                package:add("defines", "PACE_HAS_" .. name:upper())
+            end
+        end
+        package:add("links", "pace_net", "pace_runtime")
+        if package:config("profiling") then
+            package:add("defines", "PACE_ENABLE_PROFILING")
+        end
+        if package:is_plat("windows", "mingw") then
+            package:add("syslinks", "ws2_32", "bcrypt")
+            package:add("defines", "WIN32_LEAN_AND_MEAN", "NOMINMAX", "_WIN32_WINNT=0x0A00")
+        else
+            package:add("syslinks", "pthread")
+        end
+    end)
+
+    on_install("linux", "macosx", "bsd", "windows", "mingw", function (package)
+        local configs = {
+            cxxstandard = "cxx20",
+            tests = false,
+            examples = false,
+            benchmarks = false,
+            components = false,
+            scaling = false
+        }
+        for _, name in ipairs({"http1", "websocket", "tls", "dns", "quic", "http2", "http3", "profiling"}) do
+            configs[name] = package:config(name)
+        end
+        if not package:version() or package:version():ge("0.5.0") then
+            configs.uring = package:config("uring")
+        end
+        if not package:version() or package:version():ge("0.6.0") then
+            configs.modules = package:config("modules")
+            if package:config("quic_backend") ~= "auto" then
+                configs.quic_backend = package:config("quic_backend")
+            end
+        end
+        import("package.tools.xmake").install(package, configs)
+    end)
+
+    on_test(function (package)
+        local gateway = (not package:version() or package:version():ge("0.5.0")) and
+                        'app.proxy("/api", {"http://127.0.0.1:9000"});' or ""
+        assert(package:check_cxxsnippets({test = ([[
+            void test() {
+                pace::run([]() -> pace::task<void> { co_await pace::yield(); });
+            #ifdef PACE_HAS_QUIC
+                pace::quic::context context;
+            #endif
+            #ifdef PACE_HAS_HTTP1
+                pace::http::app app;
+                app.get("/", [] { return pace::http::text("ok"); });
+                auto request = pace::http::get("http://127.0.0.1/");
+                %s
+            #endif
+            }
+        ]]):format(gateway)}, {configs = {languages = "c++20"}, includes = "pace/pace.hpp"}))
+    end)

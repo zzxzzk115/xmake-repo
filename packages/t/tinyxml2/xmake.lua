@@ -1,5 +1,5 @@
 package("tinyxml2")
-    set_homepage("http://www.grinninglizard.com/tinyxml2/")
+    set_homepage("https://github.com/leethomason/tinyxml2")
     set_description("simple, small, efficient, C++ XML parser that can be easily integrating into other programs.")
     set_license("zlib")
 
@@ -21,7 +21,7 @@ package("tinyxml2")
             package:add("defines", "TINYXML2_IMPORT")
         end
 
-        if package:is_plat("android") and package:is_arch("armeabi-v7a") then
+        if package:is_plat("android") and package:is_arch("armeabi-v7a", "x86") then
             local ndk_sdkver = package:toolchain("ndk"):config("ndk_sdkver")
             if ndk_sdkver and tonumber(ndk_sdkver) < 24 then
                 io.replace("tinyxml2.cpp", "ftello", "ftell", {plain = true})

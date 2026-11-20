@@ -6,6 +6,7 @@ package("cairo")
     add_urls("https://gitlab.freedesktop.org/cairo/cairo/-/archive/$(version)/cairo-$(version).tar.gz",
              "https://gitlab.freedesktop.org/cairo/cairo.git")
 
+    add_versions("1.18.4", "2f3e6e665dbbb420809102b71ad7d0f7ce870a0b1bf8b34c073f06aefb511fc6")
     add_versions("1.18.0", "39a78afdc33a435c0f2ab53a5ec2a693c3c9b6d2ec9783ceecb2b94d54d942b0")
     add_versions("1.17.8", "b4ed6d33037171d4c6594345b42d81796f335a6995fdf5638db0d306c17a0d3e")
     add_versions("1.17.6", "a2227afc15e616657341c42af9830c937c3a6bfa63661074eabef13600e8936f")
@@ -98,6 +99,18 @@ package("cairo")
             table.insert(configs, "-Dlzo=" .. (package:config("lzo") and "enabled" or "disabled"))
         end
         import("package.tools.meson").install(package, configs)
+
+        -- Fix windows/mingw static builds, for when cairo is used as a dependency.
+        for _, pc in ipairs(os.files(path.join(package:installdir("lib", "pkgconfig"), "*.pc"))) do
+            if package:is_plat("windows") and not package:config("shared") then
+                io.replace(pc, "Cflags:", "Cflags: -DCAIRO_WIN32_STATIC_BUILD=1")
+            end
+            --cairo 1.18.0+: DWrite backend needs C++ runtime
+            if package:is_plat("mingw") and not package:config("shared") then
+                io.replace(pc, "Cflags:", "Cflags: -DCAIRO_WIN32_STATIC_BUILD=1")
+                io.replace(pc, "Libs:", "Libs: -lstdc++", {plain = true})
+            end
+        end
     end)
 
     on_test(function (package)

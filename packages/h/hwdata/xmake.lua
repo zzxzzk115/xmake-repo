@@ -7,6 +7,11 @@ package("hwdata")
     add_urls("https://github.com/vcrhonek/hwdata/archive/refs/tags/$(version).tar.gz",
              "https://github.com/vcrhonek/hwdata.git")
 
+    add_versions("v0.413", "5a71ab7a48c668ef912fcfdbec046949087019f8dd7fb967445d36fbeb778350")
+    add_versions("v0.409", "23006accc0f931dd5187d0307a57d0744e2b8feb85e73c37bc0f5229fb31eadd")
+    add_versions("v0.408", "ac7c34efc5941d5cbf739a8f7f6c84b1c2edea493fd3fca10906ef64d7afd690")
+    add_versions("v0.407", "6a88f6f5cb510fbfaa9c49488348b7fcd7aa209b0a331f24dfebb1c8c339568b")
+    add_versions("v0.406", "1ccfd1ca723595b1fe8794f4157ec5635be1ebedb5d13769b4be75d0b75bc199")
     add_versions("v0.402", "e390fe2f5f5ef7ed9ccbe62eb7cd40d4ee2b57389e7869c0dc96433c81812e7a")
     add_versions("v0.401", "e9ff93b9807cc014ed8f7f5cb5dc2c31e714058c82ddc59b7355f5c57c9b759e")
     add_versions("v0.400", "05d96821aaae04be4e684eaf9ac22e08efe646321bc64be323b91b66e7e2095c")
@@ -14,10 +19,12 @@ package("hwdata")
     add_versions("v0.397", "09eee39e73a63ab27af651ab6afdd13d6e5c3485872f2cd406b35e4d80ffdb0b")
 
     on_install("linux", "bsd", function (package)
+        local configs = {}
         if package:is_plat("bsd") then
-            io.replace("Makefile", "install -m 644", "ginstall -m 644", {plain = true})
+            -- The Linux modprobe blacklist requires GNU install's -T option.
+            table.insert(configs, "--disable-blacklist")
         end
-        import("package.tools.autoconf").install(package)
+        import("package.tools.autoconf").install(package, configs)
     end)
 
     on_test(function (package)

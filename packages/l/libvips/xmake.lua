@@ -6,6 +6,12 @@ package("libvips")
     add_urls("https://github.com/libvips/libvips/archive/refs/tags/$(version).tar.gz",
              "https://github.com/libvips/libvips.git")
 
+    add_versions("v8.18.7", "5024b4b36f20e722c267f4a9bfbdbbafb3b37d48d7125cf425c55bbf76cc9286")
+    add_versions("v8.18.6", "f410acb673e0b71c1eacbf757f28c9b235cbd29bf960001a0d2f21587bbce3ff")
+    add_versions("v8.18.5", "95e51e4dc890eac8c9fd1d2ded62930bd59825b017558efa52858790779c90a6")
+    add_versions("v8.18.3", "21aa79be2a83f1f46582c58e0fc7fc2b355e6fbb661091fb963a3b20f494dbaf")
+    add_versions("v8.18.2", "c6e9f3c384436c6ffc75848d1ad76347368b9639897f6d9f909178dc986d5200")
+    add_versions("v8.18.1", "083b59ec588aa2c362591b6b1fb151467c6c34997b7c918ed0fd90760ac7b7c3")
     add_versions("v8.18.0", "33bf7fad3d775389a2bfbae4b391196ffedcfa1f3fed258ec506d9c0241b0612")
     add_versions("v8.17.3", "c1180d13f33742685c513ac42c0556dd1ce9e2b79cdb248a807576e2d8b63b32")
     add_versions("v8.17.2", "66e2c8f0a716a08cf99e46a27535ef4938f1cae110dd9207cf8e992616b36ba7")
@@ -141,10 +147,11 @@ package("libvips")
                     enabled_string = (enabled and "true" or "false")
                 end
 
+                local confname = name
                 if configs_map[name] then
-                    name = configs_map[name]
+                    confname = configs_map[name]
                 end
-                table.insert(configs, "-D" .. name .. "=" .. enabled_string)
+                table.insert(configs, "-D" .. confname .. "=" .. enabled_string)
             end
         end
 

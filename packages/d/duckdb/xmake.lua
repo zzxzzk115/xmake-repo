@@ -1,10 +1,14 @@
 package("duckdb")
-    set_homepage("http://duckdb.org/")
+    set_homepage("https://duckdb.org/")
     set_description("DuckDB is an in-process SQL OLAP Database Management System")
     set_license("MIT")
 
     add_urls("https://github.com/duckdb/duckdb/releases/download/$(version)/libduckdb-src.zip",
              "https://github.com/duckdb/duckdb.git")
+    add_versions("v1.5.5", "102813201cf8072b8a56b6013978963f3c89202a148fd152d06909477e36fbf8")
+    add_versions("v1.5.4", "28ad9fd34607dff7ee27c2cb8e5ef77b51bb7c1a214ac3e4267dcaaeeb752b62")
+    add_versions("v1.5.2", "36388f54d4e73c7148895f9b075c063189d47df8687db237f765f74a7ff5d8f6")
+    add_versions("v1.5.0", "26f2b5ba7b2e01ec321707a1b82116d31202ac96cbf089f47d1c1b6dbae15379")
     add_versions("v1.4.4", "778434bdbda341a89dd9d2c97efcf8b834a921d4d11c6de77716a5886aa8c7fc")
     add_versions("v1.4.3", "a9d834d07524f483aa1132ee183169767008468cc485c25b2170b9e6eee47ef6")
     add_versions("v1.4.2", "ee7e178341ea8199ad52eabdff07aa89969f9904868eaa94e71efb31eaef7f2d")

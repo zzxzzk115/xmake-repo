@@ -6,6 +6,7 @@ package("minizip")
     add_urls("https://github.com/madler/zlib/archive/refs/tags/$(version).tar.gz",
              "https://github.com/madler/zlib.git")
 
+    add_versions("v1.3.2", "b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1")
     add_versions("v1.3.1", "17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c")
     add_versions("v1.2.10", "42cd7b2bdaf1c4570e0877e61f2fdc0bce8019492431d054d3d86925e5058dc5")
     add_versions("v1.2.11", "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff")
@@ -60,6 +61,9 @@ package("minizip")
 
             io.replace("CMakeLists.txt", "return()", "", {plain = true})
             io.replace("CMakeLists.txt", "find_package(ZLIB REQUIRED CONFIG)", "find_package(ZLIB REQUIRED)", {plain = true})
+            -- xrepo's zlib has no CMake config; exported minizip targets must use FindZLIB.
+            io.replace("minizipConfig.cmake.in", "find_dependency(ZLIB CONFIG COMPONENTS ${minizip_FIND_COMPONENTS})", "find_dependency(ZLIB)", {plain = true})
+            io.replace("minizipConfig.cmake.in", "find_dependency(ZLIB CONFIG)", "find_dependency(ZLIB)", {plain = true})
             io.replace("CMakeLists.txt", "ZLIB::ZLIBSTATIC", "ZLIB::ZLIB", {plain = true})
             if package:version() and package:version():le("1.3.1") then
                 io.replace("CMakeLists.txt", "ints.h", "", {plain = true})

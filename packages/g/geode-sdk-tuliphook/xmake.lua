@@ -6,9 +6,13 @@ package("geode-sdk-tuliphook")
     add_urls("https://github.com/geode-sdk/TulipHook/archive/refs/tags/$(version).tar.gz",
              "https://github.com/geode-sdk/TulipHook.git")
 
+    add_versions("v3.1.14", "4f58a4d22081b0a49c387fefb0e19e9a4f9bd8893078ccc3a5c8ade6e0c70136")
+    add_versions("v3.1.13", "eefc784bacf64bcbe14b562b9b1df816a7a0603b8cb1ce56dc74260e8ff90a5e")
+    add_versions("v3.1.12", "af3cd6d58f822282d929bcb1e3b12c0f78fedaab3b66d288c55480bbc98d0aea")
+    add_versions("v3.1.9", "c1b2930511e4e4abeb9b68db6c21bbdd0bc0d02869ea03498f4329011e07626c")
     add_versions("v3.1.7", "83f200a43002a343a17f57f861532d64018f8e7691a3c0097356df3dc1743543")
 
-    add_patches("v3.1.7", "patches/v3.1.7/fix-mingw.patch", "22592dc5afbbf87fb36fd89cb9a2f3b9af41e23b98a22f7eebf748423bff6295")
+    add_patches(">=3.1.7", "patches/v3.1.7/fix-mingw.patch", "22592dc5afbbf87fb36fd89cb9a2f3b9af41e23b98a22f7eebf748423bff6295")
 
     add_deps("geode-sdk-result")
 
@@ -35,6 +39,10 @@ package("geode-sdk-tuliphook")
     end)
 
     on_install("!wasm and !cross and !bsd and !iphoneos", function (package)
+        if package:version() and package:version():ge("3.1.13") then
+            -- fix INT_MAX
+            io.replace("src/Pool.cpp", "#include <tulip/platform/DefaultConvention.hpp>", "#include <climits>\n#include <tulip/platform/DefaultConvention.hpp>", {plain = true})
+        end
         io.writefile("xmake.lua", [[
             add_requires("geode-sdk-result")
             add_packages("geode-sdk-result")
