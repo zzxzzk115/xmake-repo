@@ -59,7 +59,14 @@ package("vri")
             -- vri.lib itself built fine.
             -- No dep_configs: the loader is a C-ABI import library, so it has no MSVC runtime
             -- coupling - same reason vulkan-headers and VMA above don't take it either.
-            if package:is_plat("android") then
+            if package:version() and package:version():ge("0.3.0") then
+                -- From v0.3.0 VRI opens the loader at run time (volk, compiled into vri), so a
+                -- consumer links no loader at all: on Android that keeps a program built for API 26
+                -- free of the Vulkan 1.1+ symbols libvulkan.so exports only from API 28-33.
+                if package:is_plat("linux", "bsd") then
+                    package:add("syslinks", "dl")
+                end
+            elseif package:is_plat("android") then
                 package:add("syslinks", "vulkan") -- part of the platform there
             elseif package:is_plat("macosx") then
                 -- Not on macOS. vulkan-loader's macOS on_fetch answers with the WHOLE
@@ -78,7 +85,12 @@ package("vri")
         end
         if package:config("gl") then
             package:add("deps", "spirv-cross vulkan-sdk-1.4.335", {configs = dep_configs})
-            if package:is_plat("wasm") then
+            if package:is_plat("android") then
+                -- Android has OpenGL ES only: VRI's GL backend uses the system EGL and libGLESv3
+                -- there (no glad, which generates desktop GL, and no glfw). Public syslinks on VRI's
+                -- own target, which do not cross the package boundary, so re-declared here.
+                package:add("syslinks", "EGL", "GLESv3")
+            elseif package:is_plat("wasm") then
                 -- The GL backend targets WebGL2 (GLES3) via Emscripten's GLFW3 + FULL_ES3 ports.
                 -- FULL_ES3 provides the ES3 entry points the backend calls (glMapBufferRange,
                 -- glTexStorage2D/3D, glGenSamplers, ...); without these link flags a consumer's
