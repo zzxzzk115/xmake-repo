@@ -6,6 +6,12 @@ package("lsquic")
     add_urls("https://github.com/litespeedtech/lsquic/archive/refs/tags/$(version).tar.gz",
              "https://github.com/litespeedtech/lsquic.git")
 
+    add_versions("v4.11.1", "97c492eff6fededfedf64c36029bbaa95450ef81552072d6e16f2c395a0ceabc")
+    add_versions("v4.9.3", "3b947f7c798a4c3e16bdd9cb8d29f372a58d46a61fe4ab5b32f0f100c51d4644")
+    add_versions("v4.9.2", "1761dab0e4262d3e0de764834076a15e1b33292556d4f647fb5dbd19e9210c52")
+    add_versions("v4.7.1", "45eeeefcba79bbd3008a4935b6c74f53d5d0a7287a000aa4795e30be3d81d4b6")
+    add_versions("v4.7.0", "f563a3e52ff80fa4b59cce95c3afbaba12c872c113957e1c3f00819b7c5bedbc")
+    add_versions("v4.6.0", "1d0502d998ccbea5148b2753bb0e8c62f2e16ec900d1f4c6f742a8d97e480e7b")
     add_versions("v4.5.0", "49caf526269842bcb4d52fc1243b3fca9ecbbf92d275ba61430bf985b77b27bf")
     add_versions("v4.4.1", "0a9cdd758d1447c6936c1009f5f2e01f9ce6b5c3271f5358d3d04cf428e93b2f")
     add_versions("v4.3.2", "fbd941446f1ef532c2063f68acf8e185d86997ccb49c9d00a91337796a9dc793")
@@ -17,7 +23,8 @@ package("lsquic")
     add_versions("v4.0.8", "f18ff2fa0addc1c51833304b3d3ff0979ecf5f53f54f96bcd3442a40cfcd440b")
 
     add_patches(">=4.0.8 <4.5.0", "patches/4.0.8/cmake.patch", "c9b8412fbd7df511dee4d57ea5dfa50bc527e015fc808270235b91abfd9baa89")
-    add_patches(">=4.5.0", "patches/4.5.0/cmake.patch", "de37a5b5e13873a9af92fb69725e2dac60ca75354811e434cab52da50f8f694b")
+    add_patches(">=4.5.0 <4.11.1", "patches/4.5.0/cmake.patch", "de37a5b5e13873a9af92fb69725e2dac60ca75354811e434cab52da50f8f694b")
+    add_patches(">=4.11.1", "patches/4.11.1/cmake.patch", "64e63aacf791f67935fb521c87d9597256d1a5f6e0e24d35acd6a0aa42d64a9a")
 
     add_configs("fiu", {description = "Use Fault Injection in Userspace (FIU)", default = false, type = "boolean"})
     if is_plat("wasm") then

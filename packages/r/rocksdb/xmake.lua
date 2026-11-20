@@ -1,11 +1,15 @@
 package("rocksdb")
-    set_homepage("http://rocksdb.org")
+    set_homepage("https://rocksdb.org")
     set_description("A library that provides an embeddable, persistent key-value store for fast storage.")
     set_license("Apache-2.0")
 
     add_urls("https://github.com/facebook/rocksdb/archive/refs/tags/$(version).tar.gz",
              "https://github.com/facebook/rocksdb.git")
 
+    add_versions("v11.12", "d8a9d46f9182b47a8d4611c351d622518b1890b9e4e150d81478ab2f45ecd340")
+    add_versions("v11.1.2", "3aba946031d27734eeea68ced7dd6f46629ba23a7b49945eb29aea68d1595311")
+    add_versions("v11.1.1", "63f11183fe40725a0e89a9e392f2c86c94b90064f1d95f5173a02cfe40de13f7")
+    add_versions("v11.0.4", "b4dfd75199f385ec76056f81d33cde8f4cb446ea2ed1821feec7b996b3409f67")
     add_versions("v10.10.1", "df2ff348f3fac8578fd4b727eee7267aaf90cd403c99b55e898d1db63fa8cff5")
     add_versions("v10.9.1", "e2e2e0254ddcb5338a58ba0723c90e792dbdca10aec520f7186e7b3a3e1c5223")
     add_versions("v10.7.5", "a9948bf5f00dd1e656fc40c4b0bf39001c3773ad22c56959bdb1c940d10e3d8d")
@@ -25,7 +29,6 @@ package("rocksdb")
     add_versions("v9.2.1", "bb20fd9a07624e0dc1849a8e65833e5421960184f9c469d508b58ed8f40a780f")
     add_versions("v9.1.1", "54ca90dd782a988cd3ebc3e0e9ba9b4efd563d7eb78c5e690c2403f1b7d4a87a")
     add_versions("v9.0.0", "013aac178aa12837cbfa3b1e20e9e91ff87962ab7fdd044fd820e859f8964f9b")
-    add_versions("v7.10.2", "4619ae7308cd3d11cdd36f0bfad3fb03a1ad399ca333f192b77b6b95b08e2f78")
 
     add_configs("jemalloc", {description = "Build with JeMalloc.", default = false, type = "boolean"})
     add_configs("liburing", {description = "Build with liburing.", default = false, type = "boolean"})
@@ -82,24 +85,39 @@ package("rocksdb")
                 table.insert(configs, "-DWITH_" .. name:upper() .. "=" .. (enabled and "ON" or "OFF"))
             end
         end
+        local cxflags = {}
+        local packagedeps = {}
         if package:is_plat("windows") then
             io.replace("CMakeLists.txt", "/Zi", "", {plain = true})
-            local vs_runtime = package:config("vs_runtime")
+            local vs_runtime = package:runtimes()
             if vs_runtime then
                 table.insert(configs, "-DWITH_MD_LIBRARY=" .. (vs_runtime:startswith("MD") and "ON" or "OFF"))
             end
+            table.insert(configs, "-DROCKSDB_SKIP_THIRDPARTY=ON")
+            for _, name in ipairs({"gflags", "snappy", "lz4", "zlib", "zstd"}) do
+                if package:config(name) then
+                    table.insert(cxflags, "-D" .. name:upper() .. "=1")
+                    if name == "zstd" then
+                        table.insert(cxflags, "-DZSTD_STATIC_LINKING_ONLY")
+                    end
+                    table.insert(packagedeps, name)
+                end
+            end
+        elseif package:is_plat("mingw") then
+            table.insert(cxflags, "-DMINGW_HAS_SECURE_API")
         end
-        local cxflags
-        if package:is_plat("mingw") then
-            cxflags = "-DMINGW_HAS_SECURE_API"
-        end
-        import("package.tools.cmake").install(package, configs, {cxflags = cxflags})
+        import("package.tools.cmake").install(package, configs, {cxflags = cxflags, packagedeps = packagedeps})
     end)
 
     on_test(function (package)
         assert(package:check_cxxsnippets({test = [[
+            #include <memory>
             void test() {
-                rocksdb::DB* db;
+                #if ROCKSDB_MAJOR >= 10
+                std::unique_ptr<rocksdb::DB> db;
+                #else
+                rocksdb::DB *db = nullptr;
+                #endif
                 rocksdb::Options options;
                 options.create_if_missing = true;
                 rocksdb::Status status = rocksdb::DB::Open(options, "./test", &db);

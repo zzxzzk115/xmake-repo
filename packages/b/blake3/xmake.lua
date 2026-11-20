@@ -6,6 +6,10 @@ package("blake3")
     add_urls("https://github.com/BLAKE3-team/BLAKE3/archive/refs/tags/$(version).tar.gz",
              "https://github.com/BLAKE3-team/BLAKE3.git")
 
+    add_versions("1.8.7", "c6782a28842b1c0478524ac06a4f2ede784038ee298d6e2162c0b089c4306a3c")
+    add_versions("1.8.6", "da7b5b0b6cf7106fe54b7d718d1ea371cce434cd15ebe5e56ca011b645cbef0e")
+    add_versions("1.8.5", "220bd81286e2a0585beac66d41ac3f4c2c33ae8a4e339fc88cf22d5e00514fe9")
+    add_versions("1.8.4", "b5ee5f5c5e025eb2733ae3af8d4c0e53bb66dff35095decfd377f1083e8ac9be")
     add_versions("1.8.3", "5a11e3f834719b6c1cae7aced1e848a37013f6f10f97272e7849aa0da769f295")
     add_versions("1.8.2", "6b51aefe515969785da02e87befafc7fdc7a065cd3458cf1141f29267749e81f")
     add_versions("1.8.1", "fc2aac36643db7e45c3653fd98a2a745e6d4d16ff3711e4b7abd3b88639463dd")
@@ -18,12 +22,6 @@ package("blake3")
     add_versions("1.5.0", "f506140bc3af41d3432a4ce18b3b83b08eaa240e94ef161eb72b2e57cdc94c69")
     add_versions("1.3.3", "27d2bc4ee5945ba75434859521042c949463ee7514ff17aaef328e23ef83fec0")
     add_versions("1.3.1", "112becf0983b5c83efff07f20b458f2dbcdbd768fd46502e7ddd831b83550109")
-
-    if on_check then
-        on_check("mingw", function (package)
-            assert(package:is_arch("x86_64"), "package(blake3/mingw): Only suport x86_64 arch")
-        end)
-    end
 
     on_install(function (package)
         os.cp(path.join(package:scriptdir(), "port", "xmake.lua"), "xmake.lua")

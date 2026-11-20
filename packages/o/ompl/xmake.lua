@@ -6,6 +6,9 @@ package("ompl")
     add_urls("https://github.com/ompl/ompl/archive/refs/tags/$(version).tar.gz",
              "https://github.com/ompl/ompl.git", {submodules = false})
 
+    add_versions("2.0.2", "d867190a46a7f730923475a68af2e09fc9e796017a59be395a4bf3900d0c3ae4")
+    add_versions("2.0.1", "365f052d5fb4419ed016394ddb26ab83dee6514b90565ad30af044a09b122aef")
+    add_versions("2.0.0", "643d3218aca72ea9007daea0b5871d534b9cd3239d2e4cc140b152be86c8eb2c")
     add_versions("1.7.0", "e2e2700dfb0b4c2d86e216736754dd1b316bd6a46cc8818e1ffcbce4a388aca9")
 
     add_configs("vamp", {description = "Build VAMP", default = false, type = "boolean", readonly = true})
@@ -20,10 +23,20 @@ package("ompl")
         add_syslinks("psapi", "ws2_32")
     elseif is_plat("linux", "bsd") then
         add_syslinks("pthread")
+    elseif is_plat("wasm") then
+        add_cxxflags("-fPIC")
     end
 
     add_deps("cmake")
     add_deps("eigen")
+
+    if on_check then
+        on_check("android", function (package)
+            if package:version() and package:version():ge("2.0.0") then
+                raise("package(ompl >= 2.0.0): unsupport android")
+            end
+        end)
+    end
 
     on_load(function (package)
         local boost_configs = {
@@ -34,6 +47,9 @@ package("ompl")
             regex = true,
             thread = true,
         }
+        if package:is_plat("windows", "mingw") then
+            package:add("defines", "_USE_MATH_DEFINES")
+        end
         if package:config("python") then
             package:add("deps", "python 3.x")
             boost_configs.python = true
@@ -54,13 +70,18 @@ package("ompl")
             "-DOMPL_BUILD_DEMOS=OFF",
             "-DOMPL_BUILD_PYTESTS=OFF",
             "-DR_EXEC=R_EXEC-NOTFOUND",
+            "-DCMAKE_CXX_STANDARD=14",
         }
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:is_debug() and "Debug" or "Release"))
         table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DOMPL_BUILD_SHARED=" .. (package:config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DOMPL_BUILD_VAMP=" .. (package:config("vamp") and "ON" or "OFF"))
         table.insert(configs, "-DOMPL_BUILD_PYBINDINGS=" .. (package:config("python") and "ON" or "OFF"))
-        import("package.tools.cmake").install(package, configs)
+        local cxflags
+        if package:is_plat("windows", "mingw") then
+            cxflags = "-D_USE_MATH_DEFINES"
+        end
+        import("package.tools.cmake").install(package, configs, {cxflags = cxflags})
     end)
 
     on_test(function (package)

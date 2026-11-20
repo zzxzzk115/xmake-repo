@@ -1,11 +1,25 @@
 package("sentry-native")
-    set_homepage("https://sentry.io/welcome/")
+    set_homepage("https://docs.sentry.io/")
     set_description("Sentry SDK for C, C++ and native applications.")
     set_license("MIT")
 
     set_urls("https://github.com/getsentry/sentry-native/releases/download/$(version)/sentry-native.zip",
              "https://github.com/getsentry/sentry-native.git")
 
+    add_versions("0.17.6", "40b4b70cbada5bfae5b73f8267831dd023ec676d9676fb0d890878f31d2b5055")
+    add_versions("0.17.1", "e510b714ac0fb5c24b08011e07c5b13fa01c9bd0f40708356e4af022aa20c5a1")
+    add_versions("0.16.6", "d35145daaafddc50c0c87ec564acf0ba9968e67b23981e7f57c702b2dd6f2ff1")
+    add_versions("0.16.5", "802ec0643df32e53c1268f5b544cb289b8880a8506f83ad58f753dc69bd803de")
+    add_versions("0.16.1", "8cd6daa3f896186f2f559129ec6badf7eecf44e5fa1a444c175b75b4b866fea0")
+    add_versions("0.15.3", "5feccee8b53167352e234cdee217f050c5f23679b6d661e829f77dfee023327c")
+    add_versions("0.15.2", "ead664dc2ec5fa09692ce512611eecf3c29e15eaa892b72492480ca938e3651f")
+    add_versions("0.15.1", "ea36b2c6ea29eb72afe891c32fb0d09a127260efc90377ce7d29578b80e409b0")
+    add_versions("0.15.0", "2ce973346e75fba8d399c16b0bd6092246ea1721f4ca6b79de295ef5041a90ef")
+    add_versions("0.14.2", "65ebb14fa305dcef7b56347cdd5afcbac3c2d0f129c0e23b53933fae4e39c508")
+    add_versions("0.14.0", "c720f82b09fc9ccfdc93f4d6d1426e67435fa4c5ada0088e07575c97287b506b")
+    add_versions("0.13.7", "386426d78e7ba481f501768d613d9fd7ff58c6919f3f8f10f9f3851a590ecb6f")
+    add_versions("0.13.2", "357f60edee5385dbad1c8ae629deda3843ccec4f244e752d52c957cc78eda57f")
+    add_versions("0.13.1", "430bcf38465f29b5b167c4bbeb1d955cda0e40efb73da224b52675e89c7a984e")
     add_versions("0.12.8", "d668da4c13052d98b3920e3731c7d2166f9b0b7113b603c751c660eb567f3248")
     add_versions("0.12.2", "d265d26e761dfdfc3ce3b2f1916c48da316fe2147981e23182ce933e4b0835b6")
     add_versions("0.12.0", "3bf6eebb7dcc9c99267746324734a15164ba0058d67f690e315d47ee0bd8e953")
@@ -34,15 +48,13 @@ package("sentry-native")
     add_versions("0.6.5", "5f74a5c5c3abc6e1e7825d3306be9e3b3fd4e0f586f3cf7e86607d6f56a71995")
     add_versions("0.6.4", "e00278bf9a4821bb4008985a5a552a84aba6ebb06d3f9e828082fcbf06b04a38")
     add_versions("0.6.3", "6b515c17a9b860ea47c6a5fd7abdfdc89b4b8cbc654c23a8bb42a39bfcb87ad9")
-    add_versions("0.5.0", "87e67ad783a7ec4476b0eb4742bd40fe5a1e2435")
-    add_versions("0.4.15", "ae3ac4efa76d431d8734d7b0b1bf9bbedaf2cbdb18dfc5c95e2411a67808cf29")
 
     add_deps("cmake")
 
     add_configs("backend", {description = "Set the backend of sentry to use", type = "string"})
 
     if is_plat("windows") then
-        add_syslinks("dbghelp", "winhttp", "shlwapi", "advapi32", "version")
+        add_syslinks("dbghelp", "synchronization", "winhttp", "shlwapi", "advapi32", "version")
     elseif is_plat("linux") then
         add_deps("libcurl")
         add_syslinks("dl", "pthread", "rt")
@@ -87,6 +99,10 @@ package("sentry-native")
         elseif backend == "breadpad" then
             package:add("links", "sentry", "breakpad_client")
         end
+
+        if package:is_plat("linux") and package:version():ge("0.13.0") then
+            package:add("deps", "libunwind")
+        end
     end)
 
     on_install("windows|x86", "windows|x64", "linux", "macosx|x86_64", function (package) -- TODO: to enable android you will need to figure out the order of libs
@@ -107,7 +123,7 @@ package("sentry-native")
         end
         if package:is_plat("windows") then
             opt.cxflags = { "/experimental:preprocessor-" } -- fixes <Windows SDK>\um\oaidl.h(487): error C2059: syntax error: '/'
-            local vs_runtime = package:config("vs_runtime")
+            local vs_runtime = package:runtimes()
             table.insert(configs, "-DSENTRY_BUILD_RUNTIMESTATIC=" .. ((vs_runtime == "MT" or vs_runtime == "MTd") and "ON" or "OFF"))
         elseif package:is_plat("macosx") then
             opt.shflags = {"-framework", "SystemConfiguration"}

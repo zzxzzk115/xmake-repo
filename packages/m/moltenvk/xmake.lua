@@ -6,6 +6,7 @@ package("moltenvk")
     add_urls("https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/$(version).tar.gz",
              "https://github.com/KhronosGroup/MoltenVK.git")
 
+    add_versions("v1.4.2", "6864db532f1dbbdb621a8d0ec13f24edae318fd9269dd3dd0cdff791334bb1cb")
     add_versions("v1.4.1", "9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c")
     add_versions("v1.4.0", "fc74aef926ee3cd473fe260a93819c09fdc939bff669271a587e9ebaa43d4306")
     add_versions("v1.3.0", "9476033d49ef02776ebab288fffae3e28fd627a3e29b7ae5975a1e1c785bf912")
@@ -20,10 +21,6 @@ package("moltenvk")
     add_versions("v1.1.0", "0538fa1c23ddae495c7f82ccd0db90790a90b7017a258ca7575fbae8021f3058")
 
     add_configs("vk_driver", {description = "Path to MoltenVK", default = nil, type = "string"})
-
-    if is_plat("macosx") then
-        add_extsources("brew::molten-vk")
-    end
 
     add_links("MoltenVK")
 
@@ -70,6 +67,24 @@ package("moltenvk")
             local frameworkdir = find_path("vulkan.framework", "~/VulkanSDK/*/macOS/Frameworks")
             if frameworkdir then
                 return { frameworkdirs = frameworkdir, frameworks = "vulkan", rpathdirs = frameworkdir }
+            end
+
+            local brew_prefix = try {function ()
+                return (os.iorunv("brew", {"--prefix", "molten-vk"})):trim()
+            end}
+            if brew_prefix then
+                local libdir = path.join(brew_prefix, "lib")
+                local includedir = path.join(brew_prefix, "include")
+                -- brew's molten-vk puts vulkan headers in libexec/include/ rather than include/
+                local libexec_includedir = path.join(brew_prefix, "libexec", "include")
+                if os.isfile(path.join(libdir, "libMoltenVK.dylib")) or
+                   os.isfile(path.join(libdir, "libMoltenVK.a")) then
+                    local sysincludedirs = {includedir}
+                    if os.isdir(libexec_includedir) then
+                        table.insert(sysincludedirs, libexec_includedir)
+                    end
+                    return {links = "MoltenVK", linkdirs = {libdir}, sysincludedirs = sysincludedirs}
+                end
             end
         end
     end)

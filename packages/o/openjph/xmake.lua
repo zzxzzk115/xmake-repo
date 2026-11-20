@@ -6,6 +6,16 @@ package("openjph")
     add_urls("https://github.com/aous72/OpenJPH/archive/refs/tags/$(version).tar.gz",
              "https://github.com/aous72/OpenJPH.git")
 
+    add_versions("0.32.0", "5cb1ebe18e5ee1322d23ff2130b37562d447d1ad5586c3d16cf84be3ae30f719")
+    add_versions("0.31.0", "fe169dbbaae71a169a0a6a68dccb346616193252c1ca044217afa0d5d1dc436f")
+    add_versions("0.30.1", "fb3ccf71af838ed2a42c6ea669308a2adaba115ae9d5862dfb1e2865b43eb5b8")
+    add_versions("0.29.0", "1302a296308996af4c023b7f104133f0d48e89e18b86da999973c476b5e8b584")
+    add_versions("0.28.1", "89629a3c0f61d474073076bb6195e9bb1d63fafb2e1c57ab46aee53a62f21819")
+    add_versions("0.27.4", "4bd6c75cc74721b1a40c3e07206621d0c953d0b21e9f63c9982a8ecb4a6f326d")
+    add_versions("0.27.3", "f96808ef72cf3acca73a52123bda3e680f6550dfb4774ad7de57eb3ce26de57a")
+    add_versions("0.27.2", "0aee36d16cc7a93aca031bfec7beb7e272c8ea9cfa8773536187f96476d22565")
+    add_versions("0.27.1", "450c7af7819f86e28f810f8efb8bbe352db295b7112565ec3239f0a042bb30b6")
+    add_versions("0.27.0", "f6768e927d8e4e4884a2efcf500a88d1b6714a48d69516332a9256803a3c8343")
     add_versions("0.26.3", "29de006da7f1e8cf0cd7c3ec424cf29103e465052c00b5a5f0ccb7e1f917bb3f")
     add_versions("0.26.2", "979dbea44fe6b6b233d08226caa0311549948a4b5d0817bb20d82cbd8bd7a30f")
     add_versions("0.26.1", "bb3c957e421557d8812b42bf3a468bc1182352b8465851cc21d209876146035a")
@@ -26,7 +36,7 @@ package("openjph")
         end)
     end
 
-    on_install(function (package)
+    on_install("!mingw or mingw|!i386", function (package)
         local ojph_header_path
         if package:version():lt("0.26.0") then
             ojph_header_path = "src/core/common"

@@ -1,10 +1,12 @@
 package("tracy")
     set_homepage("https://github.com/wolfpld/tracy")
     set_description("C++ frame profiler")
+    set_license("BSD-3-Clause")
 
     add_urls("https://github.com/wolfpld/tracy/archive/refs/tags/$(version).tar.gz",
              "https://github.com/wolfpld/tracy.git")
 
+    add_versions("v0.14.1", "bf4af567e9c7524d07f3caa745fad02fb33bd5694f11910750382d1efbb251c1")
     add_versions("v0.13.1", "d4efc50ebcb0bfcfdbba148995aeb75044c0d80f5d91223aebfaa8fa9e563d2b")
     add_versions("v0.13.0", "b0e972dfeebe42470187c1a47b449c8ee9e8656900bcf87b403175ed50796918")
     add_versions("v0.12.2", "09617765ba5ff1aa6da128d9ba3c608166c5ef05ac28e2bb77f791269d444952")
@@ -17,11 +19,16 @@ package("tracy")
     add_versions("v0.9", "93a91544e3d88f3bc4c405bad3dbc916ba951cdaadd5fcec1139af6fa56e6bfc")
     add_versions("v0.8.2", "4784eddd89c17a5fa030d408392992b3da3c503c872800e9d3746d985cfcc92a")
 
+    add_patches("v0.13.1", "https://github.com/wolfpld/tracy/commit/d79b6d040efaef3010c1e38bda616483bba10561.patch", "44314be366088cd16954eb5df8adae0b49e44df0d7b0371936291c25c96c4775")
+
     add_configs("cmake",                            {description = "Use cmake buildsystem", default = true, type = "boolean"})
 
     add_configs("tracy_enable",                     {type = "boolean", default = true,  description = "Enable profiling"})
     add_configs("on_demand",                        {type = "boolean", default = false, description = "On-demand profiling"})
     add_configs("enforce_callstack",                {type = "boolean", default = true,  description = "Enfore callstack collection for tracy regions"})
+    add_configs("callstack_depth",                  {type = "number", default = 1, description = "Callstack depth when enforced (1-62; CMake requires Tracy >=0.14 for depths >1)", restrict = function (depth)
+        return depth >= 1 and depth <= 62 and depth % 1 == 0
+    end})
     add_configs("callstack",                        {type = "boolean", default = true,  description = "Enable all callstack related functionality"})
     add_configs("callstack_inlines",                {type = "boolean", default = false, description = "Enable the inline functions in callstacks"})
     add_configs("only_localhost",                   {type = "boolean", default = false, description = "Only listen on the localhost interface"})
@@ -66,18 +73,41 @@ package("tracy")
     end
 
     on_load(function (package)
+        -- TracySystem.cpp only auto-links secur32 for MSVC. MinGW static
+        -- consumers need it for GetUserNameExA, added in 0.14.
+        if package:is_plat("mingw") and package:version() and package:version():ge("0.14") then
+            package:add("syslinks", "secur32")
+        end
         if package:config("cmake") then
+            if package:version() and package:version():lt("0.14") then
+                assert(package:config("callstack_depth") == 1, "callstack_depth requires Tracy >=0.14 with CMake")
+            end
             package:add("deps", "cmake")
         end
     end)
 
     on_install(function (package)
+        -- initial-exec TLS on armeabi-v7a references __aeabi_read_tp, which the
+        -- NDK does not provide below API 29. Leave Android on its default model.
+        if package:version() and package:version():ge("0.14") then
+            io.replace("public/client/tracy_rpmalloc.cpp", [[#    elif !defined(__HAIKU__)
+#      define TLS_MODEL __attribute__((tls_model("initial-exec")))]], [[#    elif !defined(__HAIKU__) && !defined(__ANDROID__)
+#      define TLS_MODEL __attribute__((tls_model("initial-exec")))]], {plain = true})
+            if package:is_plat("android") then
+                -- The ARM thread ID builtin also references __aeabi_read_tp below API 29.
+                io.replace("public/client/tracy_rpmalloc.cpp", "__builtin_thread_pointer()", "pthread_self()", {plain = true})
+            end
+        end
         io.replace("public/client/TracyProfiler.cpp", [[#ifdef TRACY_ENABLE]], [[#ifdef TRACY_ENABLE
 #ifdef __MINGW32__
 #define __try try
 #define __except(filter) catch(...)
 #endif]], {plain = true})
         io.replace("public/client/TracyProfiler.cpp", [[RelationProcessorDie]], [[static_cast<LOGICAL_PROCESSOR_RELATIONSHIP>(5)]], {plain = true})
+        local callstack_depth = package:config("enforce_callstack") and package:config("callstack_depth") or 0
+        if callstack_depth > 0 then
+            package:add("defines", "TRACY_CALLSTACK=" .. callstack_depth)
+        end
         if package:config("cmake") then
             io.replace("CMakeLists.txt", [[/$<IF:$<CONFIG:Release>,,$<CONFIG>>]], "", {plain = true})
 
@@ -85,8 +115,13 @@ package("tracy")
             table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
             table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
 
+            table.insert(configs, "-DTRACY_ENABLE=" .. (package:config("tracy_enable") and "ON" or "OFF"))
             table.insert(configs, "-DTRACY_ON_DEMAND=" .. (package:config("on_demand") and "ON" or "OFF"))
-            table.insert(configs, "-DTRACY_CALLSTACK=" .. (package:config("enforce_callstack") and "ON" or "OFF"))
+            if package:version() and package:version():lt("0.14") then
+                table.insert(configs, "-DTRACY_CALLSTACK=" .. (package:config("enforce_callstack") and "ON" or "OFF"))
+            else
+                table.insert(configs, "-DTRACY_CALLSTACK=" .. callstack_depth)
+            end
             table.insert(configs, "-DTRACY_NO_CALLSTACK=" .. (package:config("callstack") and "OFF" or "ON"))
             table.insert(configs, "-DTRACY_NO_CALLSTACK_INLINES=" .. (package:config("callstack_inlines") and "OFF" or "ON"))
             table.insert(configs, "-DTRACY_ONLY_LOCALHOST=" .. (package:config("only_localhost") and "ON" or "OFF"))
@@ -113,7 +148,7 @@ package("tracy")
             -- collect tracy defines from cmake configs
             for _, config in ipairs(configs) do
                 local define, value = config:match("-D(TRACY_%S+)=(.*)")
-                if define and value and value == "ON" then
+                if define and define ~= "TRACY_CALLSTACK" and value == "ON" then
                     package:add("defines", define)
                 end
             end
@@ -125,6 +160,7 @@ package("tracy")
                 tracy_enable = package:config("tracy_enable"),
                 on_demand = package:config("on_demand"),
                 enforce_callstack = package:config("enforce_callstack"),
+                callstack_depth = package:config("callstack_depth"),
                 callstack = not package:config("callstack"),
                 callstack_inlines = not package:config("callstack_inlines"),
                 only_localhost = package:config("only_localhost"),
@@ -154,7 +190,6 @@ package("tracy")
             local defines = {
                 tracy_enable = "TRACY_ENABLE",
                 on_demand = "TRACY_ON_DEMAND",
-                enforce_callstack = "TRACY_ENABLE_CALLSTACK",
                 callstack = { define = "TRACY_NO_CALLSTACK", invert = true },
                 callstack_inlines = { define = "TRACY_NO_CALLSTACK_INLINES", invert = true },
                 only_localhost = "TRACY_ONLY_LOCALHOST",

@@ -6,6 +6,11 @@ package("libdatachannel")
     add_urls("https://github.com/paullouisageneau/libdatachannel/archive/refs/tags/$(version).tar.gz",
              "https://github.com/paullouisageneau/libdatachannel.git", {submodules = false})
 
+    add_versions("v0.24.6", "22a66aebebd8dae561d8e5181da96f2fcc203e067c5b2186c07b39af913464c0")
+    add_versions("v0.24.5", "454537c3cd526bed935d847bb2dff4046f266eef84d43b2a5f2f2f293c0026f4")
+    add_versions("v0.24.4", "d93f4f7773c504a628c7c2bef73bea93cf439c0834df8ef49c6a1d5f457a61fa")
+    add_versions("v0.24.3", "bdbe5421bba83dd23a2c88d26e0268482915f3b58ff4e04f48b8e28db299d9cc")
+    add_versions("v0.24.2", "91a4795c98e13e91935127ab7880109309bf35b5e5a96c8fcc08e08322576402")
     add_versions("v0.24.1", "e6fc363497a41b5dce38602937c12d30e5e536943cf09c5ee5671c8f206eee08")
     add_versions("v0.23.2", "b9606efc5b2b173f2d22d0be3f6ba4f12af78c00ca02cde5932f3ff902980eb9")
     add_versions("v0.23.1", "63e14d619ac4d9cc310a0c7620b80e6da88abf878f27ccc78cd099f95d47b121")
@@ -82,6 +87,8 @@ package("libdatachannel")
         if package:is_plat("windows") then
             io.replace("CMakeLists.txt", "if(MSVC)\n\tinstall", "if(0)\ninstall", {plain = true})
         end
+        -- libc++ 20.1.8 needs include algorithm header file for std::transform
+        io.replace("src/configuration.cpp", "#include <cassert>", "#include <algorithm>\n#include <cassert>", {plain = true})
 
         local configs = {
             "-DNO_EXAMPLES=ON",

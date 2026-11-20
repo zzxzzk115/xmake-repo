@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release")
 add_rules("utils.install.cmake_importfiles")
 set_languages("cxx14")
 
+option("android",          {showmenu = true,  default = false})
 option("dx9",              {showmenu = true,  default = false})
 option("dx10",             {showmenu = true,  default = false})
 option("dx11",             {showmenu = true,  default = false})
@@ -16,15 +17,19 @@ option("sdl3",             {showmenu = true,  default = false})
 option("sdl3_renderer",    {showmenu = true,  default = false})
 option("sdl3_gpu",         {showmenu = true,  default = false})
 option("vulkan",           {showmenu = true,  default = false})
+option("vulkan_no_proto",  {showmenu = true,  default = false}) -- vulkan + IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 option("volk",             {showmenu = true,  default = false})
 option("win32",            {showmenu = true,  default = false})
 option("osx",              {showmenu = true,  default = false})
 option("wgpu",             {showmenu = true,  default = false})
-option("wgpu_backend",     {showmenu = true,  default = "wgpu", type = "string", values = {"wgpu", "dawn", "webgpu-sdk"}})
+option("wgpu_backend",     {showmenu = true,  default = "wgpu", type = "string", values = {"wgpu", "dawn"}})
 option("freetype",         {showmenu = true,  default = false})
+option("no_demo_windows",  {showmenu = true,  default = false})
+option("no_debug_tools",   {showmenu = true,  default = false})
+option("no_obsolete_functions", {showmenu = true,  default = false})
+option("builtin_math_operations", {showmenu = true,  default = false})
 option("user_config",      {showmenu = true,  default = nil, type = "string"})
 option("wchar32",          {showmenu = true,  default = false})
-option("android",          {showmenu = true,  default = false})
 
 if has_config("glfw") then
     add_requires("glfw")
@@ -43,7 +48,7 @@ if has_config("sdl3") or has_config("sdl3_renderer") or has_config("sdl3_gpu") t
     add_requires("libsdl3")
 end
 
-if has_config("vulkan") then
+if has_config("vulkan") or has_config("vulkan_no_proto") then
     add_requires("vulkan-headers")
 end
 
@@ -51,10 +56,8 @@ if has_config("volk") then
     add_requires("volk")
 end
 
-if has_config("wgpu") and get_config("wgpu_backend") == "wgpu" then
+if has_config("wgpu") then
     add_requires("wgpu-native")
-elseif has_config("wgpu") and get_config("wgpu_backend") == "webgpu-sdk" then
-    add_requires("webgpu-sdk")
 end
 
 if has_config("freetype") then
@@ -74,7 +77,6 @@ target("imgui")
     if has_config("android") then
         add_files("backends/imgui_impl_android.cpp")
         add_headerfiles("(backends/imgui_impl_android.h)")
-        add_links("android", "log")
     end
 
     if has_config("dx9") then
@@ -97,18 +99,10 @@ target("imgui")
         add_headerfiles("(backends/imgui_impl_dx12.h)")
     end
 
-    local use_glfw_backend = has_config("glfw")
-        or (has_config("wgpu") and get_config("wgpu_backend") == "webgpu-sdk")
-
-    if use_glfw_backend then
+    if has_config("glfw") then
         add_files("backends/imgui_impl_glfw.cpp")
         add_headerfiles("(backends/imgui_impl_glfw.h)")
-        if has_config("glfw") then
-            add_packages("glfw")
-        else
-            -- For wgpu_backend=webgpu-sdk, only link glfw and avoid a direct glfw dependency.
-            add_links("glfw")
-        end
+        add_packages("glfw")
     end
 
     if has_config("opengl2") then
@@ -167,17 +161,19 @@ target("imgui")
         add_packages("libsdl3")
     end
 
-    if has_config("vulkan") then
+    if has_config("volk") or has_config("vulkan_no_proto") or has_config("vulkan") then
         add_files("backends/imgui_impl_vulkan.cpp")
         add_headerfiles("(backends/imgui_impl_vulkan.h)")
-        add_packages("vulkan-headers")
-    end
-
-    if has_config("volk") then
-        add_files("backends/imgui_impl_vulkan.cpp")
-        add_headerfiles("(backends/imgui_impl_vulkan.h)")
-        add_packages("volk")
-        add_defines("IMGUI_IMPL_VULKAN_USE_VOLK")
+        
+        if has_config("volk") then
+            add_packages("volk")
+            add_defines("IMGUI_IMPL_VULKAN_USE_VOLK")
+        elseif has_config("vulkan_no_proto") then
+            add_packages("vulkan-headers")
+            add_defines("IMGUI_IMPL_VULKAN_NO_PROTOTYPES")
+        elseif has_config("vulkan") then
+            add_packages("vulkan-headers")
+        end
     end
 
     if has_config("win32") then
@@ -192,31 +188,12 @@ target("imgui")
     end
 
     if has_config("wgpu") then
-        if is_plat("macosx") then
-            -- webgpu-sdk's native webgpu headers may include Objective-C declarations on macOS.
-            -- Compile this translation unit as Objective-C++ for compatibility.
-            add_files("backends/imgui_impl_wgpu.cpp", {cxxflags = "-x objective-c++"})
-        else
-            add_files("backends/imgui_impl_wgpu.cpp")
-        end
+        add_files("backends/imgui_impl_wgpu.cpp")
         add_headerfiles("(backends/imgui_impl_wgpu.h)")
+        add_packages("wgpu-native")
 
-        if get_config("wgpu_backend") == "wgpu" then
-            add_packages("wgpu-native")
-            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
-        elseif get_config("wgpu_backend") == "dawn" then
-            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
-        elseif get_config("wgpu_backend") == "webgpu-sdk" then
-            add_packages("webgpu-sdk")
-            if not is_plat("wasm") then
-                add_defines("IMGUI_IMPL_WEBGPU_BACKEND_WGPU")
-            else
-                -- Newer emscripten requires emdawnwebgpu port for <webgpu/webgpu.h>.
-                -- Use Dawn backend explicitly to avoid selecting obsolete Emscripten WGPU APIs.
-                add_defines("IMGUI_IMPL_WEBGPU_BACKEND_DAWN")
-                add_cxxflags("--use-port=emdawnwebgpu", {force = true})
-                add_ldflags("--use-port=emdawnwebgpu", "-sUSE_GLFW=3", {force = true})
-            end
+        if has_config("wgpu_backend") then
+            add_defines("IMGUI_IMPL_WEBGPU_BACKEND_" .. string.upper(get_config("wgpu_backend")))
         end
     end
 
@@ -225,6 +202,22 @@ target("imgui")
         add_headerfiles("misc/freetype/imgui_freetype.h")
         add_packages("freetype")
         add_defines("IMGUI_ENABLE_FREETYPE")
+    end
+
+    if has_config("no_demo_windows") then
+        add_defines("IMGUI_DISABLE_DEMO_WINDOWS")
+    end
+
+    if has_config("no_debug_tools") then
+        add_defines("IMGUI_DISABLE_DEBUG_TOOLS")
+    end
+
+    if has_config("no_obsolete_functions") then
+        add_defines("IMGUI_DISABLE_OBSOLETE_FUNCTIONS")
+    end
+
+    if has_config("builtin_math_operations") then
+        add_defines("IMGUI_DEFINE_MATH_OPERATORS")
     end
 
     if has_config("user_config") then
@@ -243,5 +236,17 @@ target("imgui")
         end
         if has_config("freetype") then
             io.gsub(config_file, "//#define IMGUI_ENABLE_FREETYPE", "#define IMGUI_ENABLE_FREETYPE")
+        end
+        if has_config("no_demo_windows") then
+            io.gsub(config_file, "//#define IMGUI_DISABLE_DEMO_WINDOWS", "#define IMGUI_DISABLE_DEMO_WINDOWS")
+        end
+        if has_config("no_debug_tools") then
+            io.gsub(config_file, "//#define IMGUI_DISABLE_DEBUG_TOOLS", "#define IMGUI_DISABLE_DEBUG_TOOLS")
+        end
+        if has_config("no_obsolete_functions") then
+            io.gsub(config_file, "//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS", "#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS")
+        end
+        if has_config("builtin_math_operations") then
+            io.gsub(config_file, "//#define IMGUI_DEFINE_MATH_OPERATORS", "#define IMGUI_DEFINE_MATH_OPERATORS")
         end
     end)

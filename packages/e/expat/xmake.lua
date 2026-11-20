@@ -4,6 +4,10 @@ package("expat")
     set_license("MIT")
 
     set_urls("https://github.com/libexpat/libexpat/releases/download/R_$(version).tar.bz2", {version = function (version) return version:gsub("%.", "_") .. "/expat-" .. version end})
+    add_versions("2.10.0", "44e0139015f1c9908d0876b5516235136f16b14932d8f6634a16737a12742f53")
+    add_versions("2.9.0", "775e8a68f81a748a401dc3168318d4a39484eb4f954726f21517c8f42c0ba984")
+    add_versions("2.8.4", "963250a823c16a498582b4ad82ad0f88926be0769675d3b6956be4d769a1cd8f")
+    add_versions("2.8.1", "f5833dd2e1cd7739ec9182804a1a29c4f0cc7c2f26b633d3a2188b7766a88ecb")
     add_versions("2.7.4", "e6af11b01e32e5ef64906a5cca8809eabc4beb7ff2f9a0e6aabbd42e825135d0")
     add_versions("2.7.3", "59c31441fec9a66205307749eccfee551055f2d792f329f18d97099e919a3b2f")
     add_versions("2.7.1", "45c98ae1e9b5127325d25186cf8c511fa814078e9efeae7987a574b482b79b3d")
@@ -41,7 +45,11 @@ package("expat")
         if package:is_plat("windows") then
             table.insert(configs, "-DEXPAT_MSVC_STATIC_CRT=" .. (package:has_runtime("MT") and "ON" or "OFF"))
         end
-        import("package.tools.cmake").install(package, configs)
+        local opt = {}
+        if package:has_tool("cc", "cl") then
+            opt.cxflags = {"/utf-8"}
+        end
+        import("package.tools.cmake").install(package, configs, opt)
     end)
 
     on_test(function (package)

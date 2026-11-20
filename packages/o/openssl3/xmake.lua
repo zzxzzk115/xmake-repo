@@ -5,15 +5,31 @@ package("openssl3")
 
     add_urls("https://github.com/openssl/openssl/archive/refs/tags/openssl-$(version).zip")
 
+    add_versions("3.6.5", "e9773ec47f3bcfa4c3ab0a333d777bcb880f7ce9b5b488c954222dfd26dd9659")
+    add_versions("3.6.3", "e24124cb19d26f2045f53d3ee94871288136242931d001c71646c2403cfedee3")
+    add_versions("3.6.2", "599a1053292f6aec83da0f98ecd48c587fdb3184f6d18a25ecc9a9ffbc024bb4")
+    add_versions("3.6.1", "b5fb172237ed3b1b47a9f7f15d3a40f9e9563f59f544b7078780ee27279a3c0f")
     add_versions("3.6.0", "273d989d1157f0bd494054e1b799b6bdba39d4acaff6dfcb8db02656f1b454dd")
+    add_versions("3.5.7", "aefd8a46c45e05858cc32c97ee5c8e6966254b7fd972051aa582e0a4bbe3b5c1")
+    add_versions("3.5.6", "6a21a7ee475ff4fd25dc020045d3c9eb14729056ee207885e4cfa959bf449e27")
+    add_versions("3.5.5", "00d0b9dbe230bf7adac34e6da4557ca8874bf1411547f7e13d86bdb4342c04f8")
     add_versions("3.5.4", "6e6ca87952a3908282bae88c6e6a5d38bc6fc25d5570218866e5f2d206c03be1")
     add_versions("3.5.1", "9a1472b5e2a019f69da7527f381b873e3287348f3ad91783f83fff4e091ea4a8")
+    add_versions("3.4.6", "508db124a24203a6ba755aa95f68b206145e3aa6846f9c44e6f2ee1faca66be6")
+    add_versions("3.4.5", "be09c6aa135d39620bce7a89f11630e31699a65d2939226b644600b736eb4a63")
+    add_versions("3.4.4", "df15282cfd91ff525bebe91783e7a1912cdd6303627a6ca7caf50ce449bc85bb")
     add_versions("3.4.2", "d313ac2ee07ad0d9c6e9203c56a485b3ecacac61c18fe450fe3c1d4db540ad71")
+    add_versions("3.3.7", "9daf79eef0b94d3dd3cb49968ec777c42151ef9ce067632af5d820369fb3b176")
+    add_versions("3.3.6", "9b604f79c0e7311ac97904d603d13c84425c35bfd83d73f9037c9cbf99bb262b")
     add_versions("3.3.4", "88c892a670df8924889f3bfd2f2dde822e1573a23dc4176556cb5170b40693ea")
     add_versions("3.3.2", "4cda357946f9dd5541b565dba35348d614288e88aeb499045018970c789c9d61")
     add_versions("3.3.1", "307284f39bfb7061229c57e263e707655aa80aa9950bf6def28ed63fec91a726")
+    add_versions("3.2.6", "8d65844c317bf9c95420bc625d54cff40a82b5a7b0d0b15abb8a74ab299431a9")
     add_versions("3.2.5", "08a3fe150bd69a83ac64e222bdccf0698c493a94e161e4d080c82d1f308dc4e1")
     add_versions("3.1.8", "bbd5cbd8cc8ea852d31c001a9b767eadef0548b098e132b580a1f0c80d1778b7")
+    add_versions("3.0.21", "df3842f650bab371489eb67d8b04fdf4ef659573ec03c069326af034a82105a5")
+    add_versions("3.0.20", "5cc5b6e497cfa75ef61e8c4783212c3c374a47a144844c1c70fb0634127008aa")
+    add_versions("3.0.19", "82ff998847ee1346fefa7b6aa9402fbd0c81e971ad88793e44b21a39f2be1790")
     add_versions("3.0.17", "1129500758754ce4ff7eba7e46403dd56d5aa0a4e517a8fff7dac6fe120d0461")
     add_versions("3.0.14", "9590b9ae18c4de183be74dfc9da5be1f1e8f85dd631a78bc74c0ebc3d7e27a93")
     add_versions("3.0.7", "fcb37203c6bf7376cfd3aeb0be057937b7611e998b6c0d664abde928c8af3eb7")
@@ -29,6 +45,11 @@ package("openssl3")
     add_patches("3.3.2", path.join(os.scriptdir(), "patches", "3.3.2", "command-line-length.patch"), "e969153046f22d6abbdedce19191361f20edf3814b3ee47fb79a306967e03d81")
     -- https://github.com/openssl/openssl/issues/28745
     add_patches("3.6.0", path.join(os.scriptdir(), "patches", "3.6.0", "c20d4704e9e99a89d29f5ee848f9498694388905.patch"), "5d2523a6e0cc938c5d5acab849899da4b6a333b51151eaac5bd3b52741536bbc")
+    add_patches("3.5.5", path.join(os.scriptdir(), "patches", "3.6.1", "pr29826.patch"), "395cade297b377130df1c8fe17cae94ff2b3d82ea1dc7fbac8acfeb597fa8b8b")
+    add_patches("3.6.1", path.join(os.scriptdir(), "patches", "3.6.1", "pr29826.patch"), "395cade297b377130df1c8fe17cae94ff2b3d82ea1dc7fbac8acfeb597fa8b8b")
+    -- Keep the Mach-O initializer image-local without losing static CPUID setup extraction.
+    add_patches(">=3.5.1 <=3.5.7", path.join(os.scriptdir(), "patches", "3.5.1", "cpuid-setup-macos.patch"), "4334b33183c46a9fcc46af6548cd7d13a9772044d1d83bae8b91c77904e74c87")
+    add_patches(">=3.6.2 <=3.6.5", path.join(os.scriptdir(), "patches", "3.5.1", "cpuid-setup-macos.patch"), "4334b33183c46a9fcc46af6548cd7d13a9772044d1d83bae8b91c77904e74c87")
 
     on_fetch("fetch")
 
@@ -59,8 +80,12 @@ package("openssl3")
                         package:add("deps", "jom", {private = true})
                     end
                 end
-            elseif package:is_plat("android", "wasm") and is_subhost("windows") and os.arch() == "x64" then
+            elseif package:is_plat("android", "wasm") and is_host("windows") and os.arch() == "x64" then
                 -- when building for android on windows, use msys2 perl instead of strawberry-perl to avoid configure issue
+                package:add("deps", "msys2", {configs = {msystem = "MINGW64", base_devel = true}, private = true})
+            elseif package:is_plat("mingw") and is_host("windows") and not is_subhost("msys") and os.arch() == "x64" then
+                -- when building for mingw outside msys2 shell (e.g. cmd), use msys2 perl/make/sh
+                -- see https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md#native-builds-using-mingw
                 package:add("deps", "msys2", {configs = {msystem = "MINGW64", base_devel = true}, private = true})
             end
         end
@@ -118,7 +143,7 @@ package("openssl3")
             io.replace("Configurations/10-main.conf", "/debug", "", {plain = true})
             io.replace("Configurations/10-main.conf", "/Zi", "", {plain = true})
             io.replace("Configurations/50-masm.conf", "/Zi", "", {plain = true})
-            if package:version():gt("3.0.17") then
+            if package:version():ge("3.1") then
                 io.replace("Configurations/50-win-clang-cl.conf", "/Zi", "", {plain = true})
             end
             io.replace("util/copy.pl", "if (-d $dest)", "if (! -e $_) { next; }\n\tif (-d $dest)", {plain = true})
@@ -141,7 +166,9 @@ package("openssl3")
         table.insert(configs, package:config("shared") and "shared" or "no-shared")
         local installdir = package:installdir()
         -- Use MSYS2 paths instead of Windows paths
-        if is_subhost("msys") then
+        local msys2 = package:dep("msys2")
+        local use_msys_path = is_subhost("msys") or msys2 ~= nil
+        if use_msys_path then
             installdir = installdir:gsub("(%a):[/\\](.+)", "/%1/%2"):gsub("\\", "/")
         end
         table.insert(configs, "--prefix=" .. installdir)
@@ -154,7 +181,7 @@ package("openssl3")
 
         local buildenvs = import("package.tools.autoconf").buildenvs(package)
         buildenvs.RC = package:build_getenv("mrc")
-        if is_subhost("msys") then
+        if use_msys_path then
             local rc = buildenvs.RC
             if rc then
                 rc = rc:gsub("(%a):[/\\](.+)", "/%1/%2"):gsub("\\", "/")
@@ -166,11 +193,22 @@ package("openssl3")
             os.mkdir("fuzz")
         end
         os.vrunv("perl", configs, {envs = buildenvs})
-        import("package.tools.make").build(package)
-        import("package.tools.make").make(package, {"install_sw"})
+        if msys2 then
+            -- package.tools.make uses mingw32-make on windows subhost, but the generated unix makefile needs msys2 make
+            import("core.base.option")
+            import("lib.detect.find_tool")
+            local makeenvs = import("package.tools.make").buildenvs(package)
+            local make = assert(find_tool("make", {envs = makeenvs}), "make not found in msys2!")
+            local njob = option.get("jobs") or tostring(os.default_njob())
+            os.vrunv(make.program, {"-j" .. njob}, {envs = makeenvs})
+            os.vrunv(make.program, {"install_sw"}, {envs = makeenvs})
+        else
+            import("package.tools.make").build(package)
+            import("package.tools.make").make(package, {"install_sw"})
+        end
     end)
 
-    on_install("linux", "macosx", "bsd", function (package)
+    on_install("bsd", function (package)
         -- https://wiki.openssl.org/index.php/Compilation_and_Installation#PREFIX_and_OPENSSLDIR
         local buildenvs = import("package.tools.autoconf").buildenvs(package)
         local configs = {"--openssldir=" .. package:installdir(),
@@ -195,7 +233,7 @@ package("openssl3")
         end
     end)
 
-    on_install("cross", "android", "iphoneos", "wasm", function (package)
+    on_install("macosx", "linux", "cross", "android", "iphoneos", "wasm", "harmony", function (package)
         local target_arch = "generic32"
         if package:is_arch("x86_64") then
             target_arch = "x86_64"
@@ -212,7 +250,14 @@ package("openssl3")
         local target_plat = "linux"
         if package:is_plat("macosx") then
             target_plat = "darwin64"
-            target_arch = "x86_64-cc"
+            target_arch = package:is_arch("arm64") and "arm64-cc" or "x86_64-cc"
+        elseif package:is_plat("harmony") then
+            target_plat = "ohos"
+            if package:is_arch("arm64", "arm64-v8a") then
+                target_arch = "aarch64"
+            elseif package:is_arch("arm.*") then
+                target_arch = "arm"
+            end
         elseif package:is_plat("iphoneos") then
             local xcode = package:toolchain("xcode")
             local simulator = xcode and xcode:config("appledev") == "simulator"
@@ -232,6 +277,7 @@ package("openssl3")
         local target = target_plat .. "-" .. target_arch
         local configs = {target,
                          package:config("shared") and "shared" or "no-shared",
+                         "no-tests",
                          "--libdir=lib",
                          "--openssldir=" .. package:installdir():gsub("\\", "/"),
                          "--prefix=" .. package:installdir():gsub("\\", "/")}
@@ -246,8 +292,9 @@ package("openssl3")
             table.insert(configs, "no-afalgeng")
         end
 
+        import("configure.patch")(package)
         local buildenvs = import("package.tools.autoconf").buildenvs(package)
-        if (package:is_cross() and package:is_plat("android") and is_subhost("windows")) or
+        if (package:is_plat("android") and is_host("windows")) or
             package:is_plat("wasm") then
 
             buildenvs.CFLAGS = buildenvs.CFLAGS:gsub("\\", "/")
