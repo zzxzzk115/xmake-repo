@@ -137,7 +137,14 @@ package("vri")
             end
         end
         if package:config("wgpu") then
-            package:add("deps", "webgpu-sdk v0.1.2")
+            -- The webgpu-sdk each VRI release requires in its external/xmake.lua (a branch build
+            -- takes the newest). v0.3.7 dropped the per-slice copy workaround that v0.1.3's patched
+            -- wgpu-native makes unnecessary.
+            if not package:version() or package:version():ge("0.3.7") then
+                package:add("deps", "webgpu-sdk v0.1.3")
+            else
+                package:add("deps", "webgpu-sdk v0.1.2")
+            end
         end
         if package:config("d3d12") and package:is_plat("windows") then
             -- D3D12 core + DXGI; d3dcompiler (FXC) for runtime HLSL->DXBC. These are public
