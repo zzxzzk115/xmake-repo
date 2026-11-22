@@ -5,18 +5,22 @@ package("webgpu-sdk")
 
     if is_plat("windows") and is_arch("x64", "x86_64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-windows-x64.zip")
+        add_versions("v0.1.3", "8717da884ea978df0ffc419babea4daa882ccc1c19c1ec6a1f5be98c0ff60e85")
         add_versions("v0.1.2", "11b772d579907e9566e2b6cfc276f2d507cce2c14fa53a450c78e10e61152ec2")
         add_versions("v0.1.1", "b81240fb5f3abef67fb4f790d5bc9752cc4db3737df94f9a0b995c020c891600")
     elseif is_plat("linux") and is_arch("x86_64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-linux-x86_64.zip")
+        add_versions("v0.1.3", "232b9ae8fe054fdb041a21297ea2201cf08a483fddcf969b77825623f68f86cd")
         add_versions("v0.1.2", "b85956165cfa7ed7dab792d6a864a7e4c16940f5d8244171920d6e358783b45f")
         add_versions("v0.1.1", "851f2ccf2f0ac635d19633cc8a59f754e3d86381fdd7d4216519ab362febb7f9")
     elseif is_plat("macosx") and is_arch("arm64") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-macosx-arm64.zip")
+        add_versions("v0.1.3", "207f22c79849f8d40bed17e2b246a8633b604f8772b561fc913e78f737078c7c")
         add_versions("v0.1.2", "fe9eeae884b689ac253f4e54dcbc948184267041a2e6ddee4fe9bf7bb22ca4c1")
         add_versions("v0.1.1", "9924c56d785554ba6f76a0741adc3cf845af8ef101252239287152328ba32758")
     elseif is_plat("wasm") and is_arch("wasm32") then
         add_urls("https://github.com/zzxzzk115/webgpu-sdk/releases/download/$(version)/webgpu-sdk-prebuilt-$(version)-wasm-wasm32.zip")
+        add_versions("v0.1.3", "173666f1e308f3d637ffe58910c2a6f2018c50a09083321beb6a1dfc233d1d30")
         add_versions("v0.1.2", "0035fe4493b67bf0ae09fa705dc650cd1efff8d570ad81f65878d6739e4873d0")
         add_versions("v0.1.1", "e9188df90c2397dc114c31df4605342a75d7c01425c5c317f97ef7b49ab5e1ad")
     end
