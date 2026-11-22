@@ -6,6 +6,7 @@ package("vri")
     add_urls("https://github.com/zzxzzk115/VRI/archive/refs/tags/$(version).tar.gz",
              "https://github.com/zzxzzk115/VRI.git")
 
+    add_versions("v0.3.7", "609cf2d5f794c3e732102ecaf0e3555a4e6ba1e4597a25cf1e9e3ec06b089cc9")
     add_versions("v0.3.6", "d69d025d9ac67462c71d07e6b69160b1a9761003478fb53e4162ac02886866e7")
     add_versions("v0.3.5", "7f2201e611736bad7c9b367fbd90a1df355d7b55e3925db930e19df023ee4899")
     add_versions("v0.3.4", "ce7eb11239c1dbabb7ce065908725af98d3bd85752dfb03d962d69aac2fd29ca")
@@ -136,7 +137,14 @@ package("vri")
             end
         end
         if package:config("wgpu") then
-            package:add("deps", "webgpu-sdk v0.1.2")
+            -- The webgpu-sdk each VRI release requires in its external/xmake.lua (a branch build
+            -- takes the newest). v0.3.7 dropped the per-slice copy workaround that v0.1.3's patched
+            -- wgpu-native makes unnecessary.
+            if not package:version() or package:version():ge("0.3.7") then
+                package:add("deps", "webgpu-sdk v0.1.3")
+            else
+                package:add("deps", "webgpu-sdk v0.1.2")
+            end
         end
         if package:config("d3d12") and package:is_plat("windows") then
             -- D3D12 core + DXGI; d3dcompiler (FXC) for runtime HLSL->DXBC. These are public
